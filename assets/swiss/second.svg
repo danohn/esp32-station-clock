@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="44" height="188" viewBox="0 0 44 188">
+  <!-- Reconstructed from JuergenG / Rainer Zenz, BahnhofsuhrZuerich_RZ.jpg, CC BY-SA 3.0.
+       https://commons.wikimedia.org/wiki/File:BahnhofsuhrZuerich_RZ.jpg
+       https://creativecommons.org/licenses/by-sa/3.0/
+       Changed: perspective corrected, traced and rebuilt in neutral colours.
+       Photograph glare and wear are not reproduced.
+       Swiss railway-clock design and maker marks retain third-party rights. -->
+  <!-- Pivot (22,122); solid signalling disc 99 px ahead; 52 px tail. -->
+  <path d="M20.1 23 H23.9 L24.3 174 H19.7 Z" fill="#d50b20"/>
+  <circle cx="22" cy="23" r="16.2" fill="#d50b20"/>
+  <circle cx="22" cy="122" r="2.8" fill="#d50b20"/>
+</svg>

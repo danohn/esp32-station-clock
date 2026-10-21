@@ -2,10 +2,12 @@
 from pathlib import Path
 from io import BytesIO
 import argparse
+import json
+import re
 import struct
 import tempfile
 import resvg_py
-from PIL import Image
+from PIL import Image, PngImagePlugin
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets"
@@ -25,7 +27,7 @@ def raster(svg: str, width: int, height: int) -> Image.Image:
     return Image.open(BytesIO(png)).convert("RGBA").resize((width, height), Image.Resampling.LANCZOS)
 
 
-def emit(name: str, image: Image.Image, alpha: bool) -> None:
+def emit(name: str, image: Image.Image, alpha: bool, png_path: Path, license_info: dict | None = None) -> None:
     if alpha:
         data = image.tobytes("raw", "BGRA")
         fmt = "LV_COLOR_FORMAT_ARGB8888"
@@ -47,36 +49,89 @@ const lv_image_dsc_t {name} = {{
     .data_size = sizeof({name}_pixels), .data = {name}_pixels,
 }};
 '''
+    if license_info:
+        notice = "\n".join(f"// {license_info[key]}" for key in ["id", "url", "attribution", "source"])
+        code = notice + "\n" + code
     (OUT / f"{name}.c").write_text(code)
-    image.save(PNG / f"{name}.png")
+    png_path.parent.mkdir(parents=True, exist_ok=True)
+    metadata = PngImagePlugin.PngInfo()
+    if license_info:
+        for key, value in license_info.items(): metadata.add_text(key, value)
+    image.save(png_path, pnginfo=metadata)
 
 
-# SVGs are the editable master artwork; generation never rewrites them.
-artwork = {
-    "clock_dial": ("dial.svg", 368, 448, False),
-    "clock_hour": ("clock_hour.svg", 32, 136, True),
-    "clock_minute": ("clock_minute.svg", 24, 190, True),
-    "clock_second": ("clock_second.svg", 48, 200, True),
+# The same metadata supplies dimensions, pivots and timing to both renderers.
+# DB keeps its existing editable SVGs and generated filenames for compatibility.
+catalog, paths, declarations, records = [], [], [], []
+for config in [ASSETS / "db/theme.json", ASSETS / "swiss/theme.json"]:
+    theme = json.loads(config.read_text())
+    theme_id = theme["id"]
+    if not re.fullmatch(r"[a-z]+", theme_id) or theme_id != config.parent.name:
+        raise ValueError(f"Invalid theme id in {config}")
+    if not 0 < theme["sweep_seconds"] <= 60 or not 0 < theme["advance_seconds"] < 1:
+        raise ValueError(f"Invalid movement profile in {config}")
+    entry = {key: theme[key] for key in ["id", "label", "sweep_seconds", "advance_seconds"]}
+    if "license" in theme: entry["license"] = theme["license"]
+    entry["assets"] = {}
+    sprites = []
+    for part in ["dial", "hour", "minute", "second"]:
+        source = theme["assets"][part]
+        width, height = source["width"], source["height"]
+        pivot = source.get("pivot", [0, 0])
+        svg_path = (config.parent / source["svg"]).resolve()
+        if not svg_path.is_relative_to(ASSETS) or not 0 < width <= 448 or not 0 < height <= 448:
+            raise ValueError(f"Invalid {part} asset in {config}")
+        if part == "dial" and (width, height) != (368, 448):
+            raise ValueError("Dial must use the native 368 × 448 canvas")
+        if len(pivot) != 2 or not 0 <= pivot[0] < width or not 0 <= pivot[1] < height:
+            raise ValueError(f"Invalid {part} pivot in {config}")
+        symbol = f"{'clock' if theme_id == 'db' else theme_id}_{part}"
+        relative = Path(f"clock_{part}.png") if theme_id == "db" else Path(theme_id) / f"clock_{part}.png"
+        emit(symbol, raster(svg_path.read_text(), width, height), part != "dial", PNG / relative, theme.get("license"))
+        entry["assets"][part] = dict(path=str(relative), width=width, height=height)
+        if part != "dial": entry["assets"][part]["pivot"] = pivot
+        paths.extend([Path("assets") / relative, Path("main/generated") / f"{symbol}.c"])
+        declarations.append(f"LV_IMAGE_DECLARE({symbol});")
+        sprites.append(f"{{&{symbol}, {pivot[0]}, {pivot[1]}}}")
+    catalog.append(entry)
+    records.append("    {" + ", ".join([json.dumps(theme_id), json.dumps(theme["label"]),
+        "{" + str(theme["sweep_seconds"]) + ", " + str(theme["advance_seconds"]) + "}", *sprites]) + "}")
+    # A composed reference image, not part of the animated firmware.
+    preview = Image.open(PNG / entry["assets"]["dial"]["path"]).convert("RGBA")
+    for part, angle in [("hour", 290), ("minute", 240), ("second", 105)]:
+        sprite = entry["assets"][part]
+        hand = Image.open(PNG / sprite["path"])
+        pivot = sprite["pivot"]
+        layer = Image.new("RGBA", (368*4,448*4))
+        hand = hand.resize((hand.width*4,hand.height*4),Image.Resampling.LANCZOS)
+        layer.alpha_composite(hand, ((184-pivot[0])*4,(224-pivot[1])*4))
+        layer = layer.rotate(-angle, Image.Resampling.BICUBIC, center=(184*4,224*4))
+        preview.alpha_composite(layer.resize((368,448),Image.Resampling.LANCZOS))
+    preview_name = "clock-preview.png" if theme_id == "db" else f"{theme_id}-clock-preview.png"
+    preview.save(DEST / preview_name)
+    paths.append(Path(preview_name))
+(PNG / "theme-catalog.json").write_text(json.dumps(catalog, indent=2) + "\n")
+header = '''// Generated by tools/generate_assets.py. Do not edit.
+#pragma once
+#include "lvgl.h"
+#include "movement.hpp"
+#include <cstddef>
+extern "C" {
+''' + "\n".join(declarations) + '''
 }
-for name, (filename, width, height, alpha) in artwork.items():
-    svg = (ASSETS / filename).read_text()
-    emit(name, raster(svg, width, height), alpha)
-
-# A full-size composed reference image for review, not used as firmware animation.
-preview = Image.open(PNG / "clock_dial.png").convert("RGBA")
-for name, pivot, angle in [("clock_hour", (16,112), 290), ("clock_minute", (12,170), 240), ("clock_second", (24,176), 105)]:
-    hand = Image.open(PNG / f"{name}.png")
-    layer = Image.new("RGBA", (368*4,448*4))
-    hand = hand.resize((hand.width*4,hand.height*4),Image.Resampling.LANCZOS)
-    layer.alpha_composite(hand, ((184-pivot[0])*4,(224-pivot[1])*4))
-    layer = layer.rotate(-angle, Image.Resampling.BICUBIC, center=(184*4,224*4))
-    preview.alpha_composite(layer.resize((368,448),Image.Resampling.LANCZOS))
-preview.save(DEST / "clock-preview.png")
+namespace clock_theme {
+struct Sprite { const lv_image_dsc_t *image; int pivot_x, pivot_y; };
+struct Theme { const char *id, *label; railway::Movement movement; Sprite dial, hour, minute, second; };
+inline const Theme themes[] = {
+''' + ",\n".join(records) + '''
+};
+inline constexpr std::size_t count = sizeof(themes) / sizeof(themes[0]);
+}
+'''
+(OUT / "theme_catalog.hpp").write_text(header)
+paths.extend([Path("assets/theme-catalog.json"), Path("main/generated/theme_catalog.hpp")])
 if args.check:
     changed = []
-    paths = [Path("clock-preview.png")]
-    for name in artwork:
-        paths.extend([Path("assets") / f"{name}.png", Path("main/generated") / f"{name}.c"])
     for path in paths:
         expected, actual = ROOT / path, DEST / path
         if not expected.is_file():
@@ -93,4 +148,4 @@ if args.check:
         raise SystemExit("Generated artwork is stale: " + ", ".join(changed) + ". Run uv run tools/generate_assets.py")
     print("Generated artwork pixels and firmware C data match")
 else:
-    print("Generated dial and three antialiased hand assets, plus clock-preview.png")
+    print("Generated DB and Swiss artwork, previews, and shared firmware/browser theme metadata")

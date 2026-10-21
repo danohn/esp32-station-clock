@@ -23,3 +23,5 @@ releases/
 # Firmware is rebuilt for CI, Pages and tagged release artifacts
 /firmware/*.bin
 /firmware/SHA256SUMS.txt
+/firmware/THIRD_PARTY_NOTICES.md
+/firmware/SWISS_ARTWORK_NOTICE.md

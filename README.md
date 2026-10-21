@@ -1,10 +1,18 @@
 # ESP32 Station Clock
 
-A DB-style railway clock for the **Waveshare ESP32-S3-Touch-AMOLED-1.8 V2**: a 58-second sweep, a two-second pause at twelve, and a short minute-hand advance. The original DB logo is retained; this is an independent project with no DB affiliation. See [third-party notices](THIRD_PARTY_NOTICES.md).
+A railway clock for the **Waveshare ESP32-S3-Touch-AMOLED-1.8 V2**, with German DB and Swiss station-clock themes. DB makes a 58-second sweep and waits two seconds; Swiss sweeps in 58.5 seconds and waits 1.5 seconds. Both advance the minute hand at the minute boundary. This is an independent project; see [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ![Clock face](clock-preview.png)
 
-The artwork is reconstructed from a Munich Hauptbahnhof clock photograph, with measured marker and hand proportions. See the [reference comparison and measurement method](docs/clock-reference.md).
+![Swiss clock face](swiss-clock-preview.png)
+
+The artwork is reconstructed from photographs, with measured marker and hand proportions. See the [Munich DB reference](docs/clock-reference.md) and [Zürich Swiss reference](docs/swiss-clock-reference.md).
+
+## Change the theme
+
+Swipe left or right anywhere on the display, or tap the small two-position pill below the dial. The theme name appears briefly, and a short crossfade keeps the clock running. The last selection is saved on the board and restored after a restart. Timezone, brightness and Wi-Fi settings are shared across themes.
+
+The first start shows a swipe hint. Double-tap the face above the bottom control strip to replay the minute change; swipes and pill taps do not trigger replay. The website preview supports the same theme selection, plus keyboard controls and reduced-motion preferences. Its remembered preview choice is separate from a connected clock's saved theme.
 
 ## Install without ESP-IDF
 
@@ -13,7 +21,7 @@ Open the **[browser installer](https://stationclock.net/)** in desktop Chrome or
 1. Connect the V2 board with a USB data cable.
 2. Confirm the board model and choose **Install firmware**.
 3. Close the installer dialog, then choose **Connect clock** in the setup section.
-4. Set Wi-Fi, timezone and brightness. The page sets time from your computer when connected; Wi-Fi enables automatic SNTP updates.
+4. Set Wi-Fi, timezone, brightness and theme. The page sets time from your computer when connected; Wi-Fi enables automatic SNTP updates. Theme selection requires firmware 0.2.0 or later; older firmware can still use the other setup controls.
 
 The browser uses Web Serial. Flashing is provided by a locally bundled ESP Web Tools distribution. Configuration uses the firmware's existing USB text protocol; Improv is not required. Wi-Fi credentials travel directly from the page to the board, are cleared from the form, and are not sent to a server or saved in browser storage. They are stored in the board's NVS settings.
 
@@ -53,6 +61,8 @@ uv run tools/clockctl.py wifi
 uv run tools/clockctl.py timezone Berlin
 uv run tools/clockctl.py timezone Sydney
 uv run tools/clockctl.py brightness 65
+uv run tools/clockctl.py theme db
+uv run tools/clockctl.py theme swiss
 uv run tools/clockctl.py demo
 uv run tools/clockctl.py live
 uv run tools/clockctl.py forget-wifi
@@ -79,6 +89,7 @@ Open **http://localhost:4173** in desktop Chrome or Edge. Web Serial requires HT
 - `site/` contains tracked HTML, CSS, JavaScript and the serial protocol client.
 - `.local/site/` is the generated static website, including the merged image, checksum, installer manifest, artwork and ESP Web Tools bundle.
 - All site assets use relative URLs so a GitHub Pages project subpath works.
+- Preview storage contains only a theme ID; Wi-Fi credentials are never put in browser storage.
 - The page links to the source repository, issue tracker and license on GitHub. The header's **GitHub** link uses `GITHUB_REPOSITORY` when available in the Pages build; local previews link to the original repository.
 - Firmware binaries and staged website output are ignored in Git. Both are produced from the same checked-out source by CI.
 
@@ -99,7 +110,7 @@ The deployment is gated on successful firmware and site tests. Local browser tes
 
 ## Artwork and tests
 
-SVGs in `assets/` are the editable artwork masters. The generator reads them, rasterises at 4× size, downsamples for edge coverage and writes the embedded RGB565/BGRA C arrays plus the preview:
+SVGs in `assets/` are the editable artwork masters. Each theme has a `theme.json` declaring its assets, dimensions, pivots and timing. The generator rasterises at 4× size, downsamples for edge coverage and writes embedded RGB565/BGRA arrays, previews, and matching firmware/browser metadata:
 
 ```sh
 uv run tools/generate_assets.py
@@ -107,11 +118,24 @@ uv run tools/generate_assets.py --check
 mkdir -p .local
 c++ -std=c++17 -O2 tests/test_movement.cpp -o .local/test-movement
 .local/test-movement
+uv run tests/test_clockctl.py
 npm test
 npm run test:browser
 ```
 
 Browser tests need a prepared `.local/site/`. On Linux, install the Playwright browser with `npx playwright install --with-deps chromium` and use `CI=1 npm run test:browser`. Screenshots and browser reports stay ignored.
+
+After ESP-IDF has installed the managed LVGL component, a host smoke test can
+exercise the actual firmware theme view without a board:
+
+```sh
+tools/test_theme_ui.sh
+```
+
+This requires CMake, Ninja and a host C/C++ compiler. It uses real LVGL software
+rendering and synthetic touch input to check crossfades, replay/gesture
+separation, both timing profiles and stable sprite allocations across repeated
+switches. It does not verify physical touch sensitivity or AMOLED output.
 
 ## Project map
 
@@ -119,9 +143,11 @@ Browser tests need a prepared `.local/site/`. On Linux, install the Playwright b
 | --- | --- |
 | `main/clock_main.cpp` | Application, timekeeping, SNTP, RTC, USB commands and LVGL hand layers |
 | `main/movement.hpp` | Hardware-independent hand-angle and pause calculations |
+| `main/theme_view.cpp` | LVGL faces, cached artwork, crossfade, touch gestures and pill indicator |
+| `main/theme_input.hpp` | Hardware-independent swipe and pill-tap classification |
 | `main/board_display.cpp` | V2 display reset, QSPI port, DMA buffers and touch startup |
 | `assets/` | SVG artwork masters and generated PNGs |
-| `main/generated/` | Generated image data compiled into the firmware |
+| `main/generated/` | Generated image data and theme catalog compiled into the firmware |
 | `site/` | Browser installer and USB setup interface |
 | `tools/` | Portable build, artwork, packaging, preview and USB utilities |
 | `tests/` | Native movement, serial-protocol and browser interface checks |
@@ -133,6 +159,6 @@ Browser tests need a prepared `.local/site/`. On Linux, install the Playwright b
 
 Network time comes from `pool.ntp.org` over SNTP. The ESP32 keeps time between updates; the PCF85063 RTC restores UTC after a reset while it remains powered. Sydney and Berlin include daylight-saving rules; UTC is also available.
 
-The 180 ms minute-hand advance is an adjustable approximation, and the reconstructed face is not a manufacturer-supplied drawing. Rendering varies with hand angle and does not sustain 60 fps. V2 hardware, live motion, USB configuration, RTC restoration, and Wi-Fi reconnection/SNTP were checked on 21 October 2026. See [hardware verification](docs/hardware.md) and [movement details](docs/movement.md).
+The 180 ms minute-hand advance is an adjustable approximation, and the reconstructed faces are not manufacturer-supplied drawings. Rendering varies with hand angle and does not sustain 60 fps. The DB-only 0.1.1 firmware was checked on V2 hardware on 21 October 2026. Theme switching in 0.2.0 requires its own physical verification; simulated browser and host tests are not optical or touchscreen hardware measurements. See [hardware verification](docs/hardware.md) and [movement details](docs/movement.md).
 
-Original code is MIT-licensed. DB branding and third-party dependencies retain their own terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Original code is MIT-licensed. Swiss artwork is separately attributed under CC BY-SA 3.0. Railway branding and third-party dependencies retain their own terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

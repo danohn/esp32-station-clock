@@ -1,0 +1,40 @@
+{
+  "id": "db",
+  "label": "DB",
+  "sweep_seconds": 58,
+  "advance_seconds": 0.18,
+  "assets": {
+    "dial": {
+      "svg": "../dial.svg",
+      "width": 368,
+      "height": 448
+    },
+    "hour": {
+      "svg": "../clock_hour.svg",
+      "width": 32,
+      "height": 136,
+      "pivot": [
+        16,
+        112
+      ]
+    },
+    "minute": {
+      "svg": "../clock_minute.svg",
+      "width": 24,
+      "height": 190,
+      "pivot": [
+        12,
+        170
+      ]
+    },
+    "second": {
+      "svg": "../clock_second.svg",
+      "width": 48,
+      "height": 200,
+      "pivot": [
+        24,
+        176
+      ]
+    }
+  }
+}
