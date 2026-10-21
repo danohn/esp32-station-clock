@@ -6,7 +6,7 @@ A DB-style railway clock for the **Waveshare ESP32-S3-Touch-AMOLED-1.8 V2**: a 5
 
 ## Install without ESP-IDF
 
-Open the **[browser installer](https://danohn.github.io/esp32-station-clock/)** in desktop Chrome or Edge. No ESP-IDF installation is needed:
+Open the **[browser installer](https://stationclock.net/)** in desktop Chrome or Edge. No ESP-IDF installation is needed:
 
 1. Connect the V2 board with a USB data cable.
 2. Confirm the board model and choose **Install firmware**.
