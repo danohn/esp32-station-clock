@@ -99,6 +99,7 @@ SVGs in `assets/` are the editable artwork masters. The generator reads them, ra
 
 ```sh
 uv run tools/generate_assets.py
+uv run tools/generate_assets.py --check
 mkdir -p .local
 c++ -std=c++17 -O2 tests/test_movement.cpp -o .local/test-movement
 .local/test-movement

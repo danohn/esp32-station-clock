@@ -1,14 +1,23 @@
 """Generate deterministic LVGL assets from editable SVG artwork."""
 from pathlib import Path
 from io import BytesIO
+import argparse
 import struct
+import tempfile
 import resvg_py
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets"
-OUT = ROOT / "main" / "generated"
-OUT.mkdir(exist_ok=True)
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--check", action="store_true", help="Check generated pixels and C data without changing files")
+args = parser.parse_args()
+temporary = tempfile.TemporaryDirectory() if args.check else None
+DEST = Path(temporary.name) if temporary else ROOT
+OUT = DEST / "main" / "generated"
+PNG = DEST / "assets"
+OUT.mkdir(parents=True, exist_ok=True)
+PNG.mkdir(parents=True, exist_ok=True)
 
 
 def raster(svg: str, width: int, height: int) -> Image.Image:
@@ -39,7 +48,7 @@ const lv_image_dsc_t {name} = {{
 }};
 '''
     (OUT / f"{name}.c").write_text(code)
-    image.save(ASSETS / f"{name}.png")
+    image.save(PNG / f"{name}.png")
 
 
 # SVGs are the editable master artwork; generation never rewrites them.
@@ -54,13 +63,34 @@ for name, (filename, width, height, alpha) in artwork.items():
     emit(name, raster(svg, width, height), alpha)
 
 # A full-size composed reference image for review, not used as firmware animation.
-preview = Image.open(ASSETS / "clock_dial.png").convert("RGBA")
+preview = Image.open(PNG / "clock_dial.png").convert("RGBA")
 for name, pivot, angle in [("clock_hour", (16,112), 305), ("clock_minute", (12,158), 60), ("clock_second", (18,166), 248)]:
-    hand = Image.open(ASSETS / f"{name}.png")
+    hand = Image.open(PNG / f"{name}.png")
     layer = Image.new("RGBA", (368*4,448*4))
     hand = hand.resize((hand.width*4,hand.height*4),Image.Resampling.LANCZOS)
     layer.alpha_composite(hand, ((184-pivot[0])*4,(224-pivot[1])*4))
     layer = layer.rotate(-angle, Image.Resampling.BICUBIC, center=(184*4,224*4))
     preview.alpha_composite(layer.resize((368,448),Image.Resampling.LANCZOS))
-preview.save(ROOT / "clock-preview.png")
-print("Generated dial and three antialiased hand assets, plus clock-preview.png")
+preview.save(DEST / "clock-preview.png")
+if args.check:
+    changed = []
+    paths = [Path("clock-preview.png")]
+    for name in artwork:
+        paths.extend([Path("assets") / f"{name}.png", Path("main/generated") / f"{name}.c"])
+    for path in paths:
+        expected, actual = ROOT / path, DEST / path
+        if not expected.is_file():
+            changed.append(str(path))
+        elif path.suffix == ".png":
+            # PNG compression can differ between platforms; the decoded pixels must match.
+            with Image.open(expected) as before, Image.open(actual) as after:
+                if before.size != after.size or before.convert("RGBA").tobytes() != after.convert("RGBA").tobytes():
+                    changed.append(str(path))
+        elif expected.read_bytes() != actual.read_bytes():
+            changed.append(str(path))
+    temporary.cleanup()
+    if changed:
+        raise SystemExit("Generated artwork is stale: " + ", ".join(changed) + ". Run uv run tools/generate_assets.py")
+    print("Generated artwork pixels and firmware C data match")
+else:
+    print("Generated dial and three antialiased hand assets, plus clock-preview.png")

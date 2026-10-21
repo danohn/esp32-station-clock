@@ -56,9 +56,7 @@ jobs:
           uv sync --frozen
           npm ci
       - name: Verify generated artwork
-        run: |
-          uv run tools/generate_assets.py
-          git diff --exit-code -- assets main/generated clock-preview.png
+        run: uv run tools/generate_assets.py --check
       - name: Test native movement calculations
         run: |
           mkdir -p .local
