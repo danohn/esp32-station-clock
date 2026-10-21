@@ -21,6 +21,7 @@ test('production analytics sends named actions without setup values or serial de
     expect(new URL(route.request().url()).pathname).toBe('/js/pa-q75pBtpEil5K2tX8Zb3lH.js');
     await route.fulfill({ contentType: 'text/javascript', body: `
       window.recordedAnalytics = [];
+      window.analyticsOptions = window.plausible.o;
       const queued = window.plausible?.q || [];
       window.plausible = (...args) => window.recordedAnalytics.push(args);
       queued.forEach(args => window.plausible(...args));
@@ -29,6 +30,9 @@ test('production analytics sends named actions without setup values or serial de
   await mockSerial(page); await page.goto('https://stationclock.net/');
   await expect(page.locator('#installer-loading')).toBeHidden();
   await expect(page.locator('script[data-domain="stationclock.net"]')).toHaveAttribute('src', 'https://analytics.danohn.com/js/pa-q75pBtpEil5K2tX8Zb3lH.js');
+  await expect.poll(() => page.evaluate(() => window.analyticsOptions)).toEqual({
+    formSubmissions: false, fileDownloads: false, outboundLinks: false,
+  });
   await page.getByRole('button', { name: 'Connect clock', exact: true }).click();
   await expect(page.locator('#connection-status')).toContainText('Clock connected.');
   await page.locator('#ssid').fill('Private test network');

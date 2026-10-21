@@ -13,7 +13,8 @@ if (production) {
     (window.plausible.q = window.plausible.q || []).push(args);
   };
   window.plausible.init = window.plausible.init || function (options) { window.plausible.o = options || {}; };
-  window.plausible.init();
+  // Override server defaults too, so later dashboard changes cannot enable form capture.
+  window.plausible.init({ formSubmissions: false, fileDownloads: false, outboundLinks: false });
   const script = document.createElement('script');
   script.async = true;
   script.src = 'https://analytics.danohn.com/js/pa-q75pBtpEil5K2tX8Zb3lH.js';
