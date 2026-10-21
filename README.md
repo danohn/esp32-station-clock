@@ -77,7 +77,7 @@ Open **http://localhost:4173** in desktop Chrome or Edge. Web Serial requires HT
 - `site/` contains tracked HTML, CSS, JavaScript and the serial protocol client.
 - `.local/site/` is the generated static website, including the merged image, checksum, installer manifest, artwork and ESP Web Tools bundle.
 - All site assets use relative URLs so a GitHub Pages project subpath works.
-- The page's **Project** link is filled from `GITHUB_REPOSITORY` during the Pages build; local previews use an in-page project section.
+- The page links to the source repository, issue tracker and license on GitHub. The header's **GitHub** link uses `GITHUB_REPOSITORY` when available in the Pages build; local previews link to the original repository.
 - Firmware binaries and staged website output are ignored in Git. Both are produced from the same checked-out source by CI.
 
 ## GitHub Actions and Pages

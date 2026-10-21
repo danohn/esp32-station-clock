@@ -13,18 +13,19 @@
 <body>
   <header class="masthead">
     <a class="wordmark" href="#top" aria-label="Station Clock home"><img src="./assets/db-logo.svg" width="40" height="28" alt="DB"><span>Station Clock</span></a>
-    <nav aria-label="Main"><a href="#install">Install</a><a href="#setup">Set up</a><a id="source-link" href="#about">Project</a></nav>
+    <nav aria-label="Main"><a href="#install">Install</a><a href="#setup">Set up</a><a id="source-link" href="https://github.com/danohn/esp32-station-clock">GitHub</a></nav>
   </header>
   <main id="top">
     <section class="intro" aria-labelledby="intro-title">
       <div class="intro-copy">
         <p class="eyebrow">Waveshare · ESP32-S3 · AMOLED 1.8 V2</p>
-        <h1 id="intro-title">A little piece<br>of the platform.</h1>
-        <p class="lead">The railway clock’s familiar sweep, its pause at twelve, and the next minute arriving right on cue.</p>
+        <h1 id="intro-title">A station clock<br>for your desk.</h1>
+        <p class="lead">A small version of the German railway clock, with the red seconds hand and its pause at the top of each minute.</p>
         <p>Install it on your display over USB. No SDK or command line required.</p>
         <a class="button primary" href="#install">Install the clock <span aria-hidden="true">↘</span></a>
         <a class="quiet-link" href="#setup">Already installed? Set up your clock.</a>
-        <p class="motion-caption" id="clock-phase">58 seconds around. Two seconds to wait.</p>
+        <p class="source-note">Open-source firmware and installer.<br><a href="https://github.com/danohn/esp32-station-clock">View on GitHub <span aria-hidden="true">↗</span></a></p>
+        <p class="motion-caption" id="clock-phase">58-second sweep · 2-second pause</p>
       </div>
       <figure class="clock-figure">
         <div class="device">
@@ -45,7 +46,7 @@
         <div class="step-marker" aria-hidden="true">1</div>
         <div class="step-content">
           <p class="eyebrow">Install firmware <span class="version" data-version>v0.1.0</span></p>
-          <h2 id="install-title">Plug in. Put the clock on board.</h2>
+          <h2 id="install-title">Install the firmware.</h2>
           <p>Use desktop Chrome or Edge and a USB data cable. Select your ESP32-S3 when the browser asks.</p>
           <div class="board-note"><strong>For the Waveshare ESP32-S3-Touch-AMOLED-1.8 V2.</strong><br>Other display sizes and the original revision have not been verified.</div>
           <label class="check"><input id="board-confirm" type="checkbox"> <span>I’m using the 1.8-inch AMOLED V2 board.</span></label>
@@ -65,7 +66,7 @@
         <div class="step-marker" aria-hidden="true">2</div>
         <div class="step-content">
           <p class="eyebrow">Set up over USB</p>
-          <h2 id="setup-title">Give it the time. Let it stay in time.</h2>
+          <h2 id="setup-title">Set the time and Wi-Fi.</h2>
           <p>Connect the installed clock to set its time from this computer. Add Wi-Fi for automatic time updates.</p>
           <div class="connection-actions"><button class="button secondary" id="connect-button" type="button">Connect clock</button><button class="button subtle" id="disconnect-button" type="button" hidden>Disconnect</button></div>
           <p class="notice" id="connection-status" role="status" aria-live="polite">No clock connected.</p>
@@ -86,12 +87,13 @@
       </section>
     </div>
     <section class="about" id="about" aria-labelledby="about-title">
-      <h2 id="about-title">A clock with a small pause.</h2>
+      <h2 id="about-title">How the clock works</h2>
       <p>The seconds hand completes its lap in 58 seconds, waits at twelve, then sets off as the minute hand advances. The firmware gets UTC time from <code>pool.ntp.org</code> and applies your selected timezone.</p>
+      <p>The firmware and this installer are <a href="https://github.com/danohn/esp32-station-clock">on GitHub</a>. You can build them yourself, change the clock, or <a href="https://github.com/danohn/esp32-station-clock/issues">report a bug</a>. The original code uses the <a href="https://github.com/danohn/esp32-station-clock/blob/main/LICENSE">MIT license</a>; DB branding and third-party components have <a href="https://github.com/danohn/esp32-station-clock/blob/main/THIRD_PARTY_NOTICES.md">separate terms</a>.</p>
       <details><summary>Connection or installation trouble?</summary><ul><li>Close serial monitors and the installer dialog before opening clock setup. Only one connection can use the USB port at a time.</li><li>If the board is missing from the picker, try a USB data cable. To enter download mode, hold BOOT while resetting the board, then release BOOT.</li><li>If Wi-Fi does not connect, check the network name, password, and 2.4 GHz availability.</li><li>Without Wi-Fi, the clock continues locally. Its RTC keeps time across resets while it remains powered.</li></ul></details>
       <details><summary>Hardware, accuracy & development</summary><p>Verified on V2 hardware with CO5300 display and CST820-family touch. The 180 ms minute-hand advance is an adjustable approximation. Frame rate varies with hand angle; this firmware does not sustain 60 fps. Source builds use ESP-IDF v5.5.2.</p></details>
     </section>
   </main>
-  <footer><span>Station Clock · <span data-version>v0.1.0</span></span><p>An independent project. Deutsche Bahn owns the DB mark; this project is not affiliated with or endorsed by DB.</p><span>Flashing powered by <a href="https://esphome.github.io/esp-web-tools/">ESP Web Tools</a></span></footer>
+  <footer><span><a href="https://github.com/danohn/esp32-station-clock">Station Clock on GitHub</a> · <span data-version>v0.1.0</span></span><p>An independent project. Deutsche Bahn owns the DB mark; this project is not affiliated with or endorsed by DB.</p><span>USB installer: <a href="https://esphome.github.io/esp-web-tools/">ESP Web Tools</a></span></footer>
 </body>
 </html>
