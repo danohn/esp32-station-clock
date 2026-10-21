@@ -1,14 +1,18 @@
 import { test, expect } from '@playwright/test';
-async function mockSerial(page) {
-  await page.addInitScript(() => {
-    const encoder = new TextEncoder(); let input; let open = false;
+async function mockSerial(page, { fragmentFirstStatus = false } = {}) {
+  await page.addInitScript(({ fragmentFirstStatus }) => {
+    const encoder = new TextEncoder(); let input; let open = false; let statusRequests = 0;
     window.fakeCommands = [];
     const line = (text) => input.enqueue(encoder.encode(text + '\n'));
     const port = {
       readable: new ReadableStream({ start(controller) { input = controller; } }),
       writable: new WritableStream({ write(bytes) {
         const command = new TextDecoder().decode(bytes).trimEnd(); window.fakeCommands.push(command);
-        if (command === 'STATUS') line('CLOCK_STATUS time=2026-10-21T12:00:00.000 zone=Sydney epoch_us=1792544400000000 demo=0');
+        if (command === 'STATUS') {
+          statusRequests++;
+          const status = 'CLOCK_STATUS time=2026-10-21T12:00:00.000 zone=Sydney epoch_us=1792544400000000 demo=0';
+          line(fragmentFirstStatus && statusRequests === 1 ? 'I (123) station_clock: Animation updates 46' + status : status);
+        }
         else if (command.startsWith('TIME ')) { line('CLOCK_STATUS time=startup zone=Sydney'); line('CLOCK_OK time'); }
         else if (command.startsWith('WIFI ')) {
           line('CLOCK_OK wifi saved');
@@ -22,8 +26,18 @@ async function mockSerial(page) {
       getInfo() { return { usbVendorId: 0x303a, usbProductId: 0x1001 }; },
     };
     Object.defineProperty(navigator, 'serial', { configurable: true, value: { requestPort: async () => port } });
-  });
+  }, { fragmentFirstStatus });
 }
+test('connection recovers when a partial boot log hides the first status reply', async ({ page }) => {
+  await mockSerial(page, { fragmentFirstStatus: true }); await page.goto('/');
+  await page.getByRole('button', { name: 'Connect clock', exact: true }).click();
+  await expect(page.locator('#connection-status')).toHaveText('Clock connected. Time set from this computer.');
+  const commands = await page.evaluate(() => window.fakeCommands);
+  expect(commands.filter((command) => command === 'STATUS')).toHaveLength(2);
+  expect(commands.filter((command) => command.startsWith('TIME '))).toHaveLength(1);
+  await page.getByRole('button', { name: 'Disconnect', exact: true }).click();
+  await expect(page.locator('#connection-status')).toHaveText('Clock disconnected.');
+});
 test('installer library loads and board confirmation controls installation', async ({ page }) => {
   await mockSerial(page); await page.goto('/');
   await expect(page.locator('#installer-loading')).toBeHidden();

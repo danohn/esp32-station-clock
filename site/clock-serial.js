@@ -18,7 +18,11 @@ export class ClockSerial extends EventTarget {
     let entry;
     const promise = new Promise((resolve, reject) => {
       entry = { predicate, resolve, reject };
-      entry.timer = setTimeout(() => { this.waiters.delete(entry); reject(new Error('The clock did not respond. Close other serial tools and reconnect.')); }, timeout);
+      entry.timer = setTimeout(() => {
+        this.waiters.delete(entry);
+        const error = new Error('The clock did not respond. Close other serial tools and reconnect.');
+        error.name = 'ClockTimeoutError'; reject(error);
+      }, timeout);
       this.waiters.add(entry);
     });
     // Avoid an unhandled rejection if a write fails before the caller awaits its reply.
@@ -74,7 +78,16 @@ export class ClockSerial extends EventTarget {
       this.readTask = this.readLoop();
       // Opening native USB can reset the ESP32-S3. Drain boot output before sending commands.
       await delay(1500);
-      await this.command('STATUS', (line) => line.startsWith('CLOCK_STATUS '));
+      // A truncated log left in USB output can absorb the first reply into its line.
+      // STATUS is read-only, so retry it within a bounded handshake window.
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          await this.command('STATUS', (line) => line.startsWith('CLOCK_STATUS '), 1500);
+          break;
+        } catch (error) {
+          if (error.name !== 'ClockTimeoutError' || attempt === 3) throw error;
+        }
+      }
     } catch (error) { await this.disconnect(); throw error; }
   }
   async command(text, predicate = (line) => line.startsWith('CLOCK_OK '), timeout = 6000) {
