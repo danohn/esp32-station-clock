@@ -1,7 +1,7 @@
 {
   "name": "esp32-station-clock-site",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "build:site": "node tools/build_site.mjs",

@@ -1,7 +1,70 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="368" height="448" viewBox="0 0 368 448">
+<!-- Reconstructed from the Munich Hbf reference; see docs/clock-reference.md. -->
 <rect width="368" height="448" fill="#000"/>
-<circle cx="184" cy="224" r="183" fill="#a8adb1"/>
-<circle cx="184" cy="224" r="180.5" fill="#fcfcfa"/>
-<g fill="#121a26"><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(0 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(6 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(12 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(18 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(24 184 224)"/><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(30 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(36 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(42 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(48 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(54 184 224)"/><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(60 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(66 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(72 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(78 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(84 184 224)"/><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(90 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(96 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(102 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(108 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(114 184 224)"/><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(120 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(126 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(132 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(138 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(144 184 224)"/><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(150 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(156 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(162 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(168 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(174 184 224)"/><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(180 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(186 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(192 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(198 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(204 184 224)"/><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(210 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(216 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(222 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(228 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(234 184 224)"/><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(240 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(246 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(252 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(258 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(264 184 224)"/><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(270 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(276 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(282 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(288 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(294 184 224)"/><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(300 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(306 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(312 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(318 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(324 184 224)"/><rect x="179.95" y="60" width="8.1" height="25.5" transform="rotate(330 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(336 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(342 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(348 184 224)"/><rect x="182.65" y="60" width="2.7" height="10.8" transform="rotate(354 184 224)"/></g>
-<path d="M27.2 7.53h-1.43v4.54h1.83c1.53.03 2.47-1.04 2.47-2.27 0-1.63-.96-2.32-2.87-2.27zm.6 7.8h-2.04v4.84h1.84c.7.01 3.07 0 3.07-2.37 0-1.01-.62-2.5-2.87-2.47zm-17.1-7.7h-.83v12.54h1.53c2.58.06 3.77-2.05 3.77-5.97 0-3.6-.41-6.74-4.47-6.57zm18.4-2.76c5.13.02 5.23 4.03 5.23 4.43a4.33 4.33 0 01-3.15 4.13v.14c3.26.79 3.75 3.14 3.75 4.43 0 4.76-4.68 5.02-6.71 5.03h-6.68V4.87h7.56zm-16.9 0c4.7.02 7.23 3.01 7.23 9.03 0 5.29-1.68 9.1-7.23 9.13H5.54V4.87h6.66zm23.7-1.94H4c-.63 0-1.04.5-1.06 1.05l-.01.12v19.7c0 .57.35 1.22.95 1.26l.12.01h31.9c.63 0 1.13-.6 1.16-1.14l.01-.13V4.1a1.2 1.2 0 00-1.17-1.17zm0-2.86c2.1 0 3.97 1.56 4.03 3.63v20.2a4 4 0 01-3.83 4.03H4A3.91 3.91 0 01.07 24.1V3.9A3.8 3.8 0 013.8.07h32.1z" fill="#d50b20" transform="translate(163 148) scale(1.05)"/>
+<circle cx="184" cy="224" r="183" fill="#202127"/>
+<circle cx="184" cy="224" r="177.1" fill="#a1a5a5"/>
+<circle cx="184" cy="224" r="171" fill="#fcfcfa"/>
+<g fill="#171719">
+  <rect x="176.9" y="55.7" width="14.2" height="51.6" transform="rotate(0 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(6 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(12 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(18 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(24 184 224)"/>
+  <rect x="177.3" y="55.7" width="13.4" height="42.6" transform="rotate(30 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(36 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(42 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(48 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(54 184 224)"/>
+  <rect x="177.3" y="55.7" width="13.4" height="42.6" transform="rotate(60 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(66 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(72 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(78 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(84 184 224)"/>
+  <rect x="176.9" y="55.7" width="14.2" height="51.6" transform="rotate(90 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(96 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(102 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(108 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(114 184 224)"/>
+  <rect x="177.3" y="55.7" width="13.4" height="42.6" transform="rotate(120 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(126 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(132 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(138 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(144 184 224)"/>
+  <rect x="177.3" y="55.7" width="13.4" height="42.6" transform="rotate(150 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(156 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(162 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(168 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(174 184 224)"/>
+  <rect x="176.9" y="55.7" width="14.2" height="51.6" transform="rotate(180 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(186 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(192 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(198 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(204 184 224)"/>
+  <rect x="177.3" y="55.7" width="13.4" height="42.6" transform="rotate(210 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(216 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(222 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(228 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(234 184 224)"/>
+  <rect x="177.3" y="55.7" width="13.4" height="42.6" transform="rotate(240 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(246 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(252 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(258 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(264 184 224)"/>
+  <rect x="176.9" y="55.7" width="14.2" height="51.6" transform="rotate(270 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(276 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(282 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(288 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(294 184 224)"/>
+  <rect x="177.3" y="55.7" width="13.4" height="42.6" transform="rotate(300 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(306 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(312 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(318 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(324 184 224)"/>
+  <rect x="177.3" y="55.7" width="13.4" height="42.6" transform="rotate(330 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(336 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(342 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(348 184 224)"/>
+  <rect x="180.85" y="55.7" width="6.3" height="14.7" transform="rotate(354 184 224)"/>
+</g>
+<path d="M27.2 7.53h-1.43v4.54h1.83c1.53.03 2.47-1.04 2.47-2.27 0-1.63-.96-2.32-2.87-2.27zm.6 7.8h-2.04v4.84h1.84c.7.01 3.07 0 3.07-2.37 0-1.01-.62-2.5-2.87-2.47zm-17.1-7.7h-.83v12.54h1.53c2.58.06 3.77-2.05 3.77-5.97 0-3.6-.41-6.74-4.47-6.57zm18.4-2.76c5.13.02 5.23 4.03 5.23 4.43a4.33 4.33 0 01-3.15 4.13v.14c3.26.79 3.75 3.14 3.75 4.43 0 4.76-4.68 5.02-6.71 5.03h-6.68V4.87h7.56zm-16.9 0c4.7.02 7.23 3.01 7.23 9.03 0 5.29-1.68 9.1-7.23 9.13H5.54V4.87h6.66zm23.7-1.94H4c-.63 0-1.04.5-1.06 1.05l-.01.12v19.7c0 .57.35 1.22.95 1.26l.12.01h31.9c.63 0 1.13-.6 1.16-1.14l.01-.13V4.1a1.2 1.2 0 00-1.17-1.17zm0-2.86c2.1 0 3.97 1.56 4.03 3.63v20.2a4 4 0 01-3.83 4.03H4A3.91 3.91 0 01.07 24.1V3.9A3.8 3.8 0 013.8.07h32.1z" fill="#d50b20" transform="translate(166.45 115.7) scale(0.8775)"/>
 </svg>

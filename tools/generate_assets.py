@@ -55,8 +55,8 @@ const lv_image_dsc_t {name} = {{
 artwork = {
     "clock_dial": ("dial.svg", 368, 448, False),
     "clock_hour": ("clock_hour.svg", 32, 136, True),
-    "clock_minute": ("clock_minute.svg", 24, 182, True),
-    "clock_second": ("clock_second.svg", 36, 224, True),
+    "clock_minute": ("clock_minute.svg", 24, 190, True),
+    "clock_second": ("clock_second.svg", 48, 200, True),
 }
 for name, (filename, width, height, alpha) in artwork.items():
     svg = (ASSETS / filename).read_text()
@@ -64,7 +64,7 @@ for name, (filename, width, height, alpha) in artwork.items():
 
 # A full-size composed reference image for review, not used as firmware animation.
 preview = Image.open(PNG / "clock_dial.png").convert("RGBA")
-for name, pivot, angle in [("clock_hour", (16,112), 305), ("clock_minute", (12,158), 60), ("clock_second", (18,166), 248)]:
+for name, pivot, angle in [("clock_hour", (16,112), 290), ("clock_minute", (12,170), 240), ("clock_second", (24,176), 105)]:
     hand = Image.open(PNG / f"{name}.png")
     layer = Image.new("RGBA", (368*4,448*4))
     hand = hand.resize((hand.width*4,hand.height*4),Image.Resampling.LANCZOS)

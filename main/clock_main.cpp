@@ -233,7 +233,7 @@ extern "C" void app_main() {
     if(err==ESP_ERR_NVS_NO_FREE_PAGES||err==ESP_ERR_NVS_NEW_VERSION_FOUND) { ESP_ERROR_CHECK(nvs_flash_erase()); err=nvs_flash_init(); }
     ESP_ERROR_CHECK(err); ESP_ERROR_CHECK(nvs_open("clock",NVS_READWRITE,&settings));
     int32_t zone=0; nvs_get_i32(settings,"zone",&zone); apply_zone(zone,false);
-    ESP_LOGI(TAG,"DB Station Clock 0.1.0 - starting display");
+    ESP_LOGI(TAG,"DB Station Clock 0.1.1 - starting display");
     lv_display_t *display=clock_display_start();
     ESP_ERROR_CHECK(display?ESP_OK:ESP_FAIL);
     int32_t brightness=65;nvs_get_i32(settings,"brightness",&brightness);
@@ -253,7 +253,7 @@ extern "C" void app_main() {
         lv_obj_set_style_bg_color(screen,lv_color_black(),0);
         lv_obj_t *dial=lv_image_create(screen);lv_image_set_src(dial,cache_asset(&clock_dial));lv_obj_set_pos(dial,0,0);
         lv_obj_set_clickable(dial,false);
-        hour_hand=make_hand(&clock_hour,16,112);minute_hand=make_hand(&clock_minute,12,158);second_hand=make_hand(&clock_second,18,166);
+        hour_hand=make_hand(&clock_hour,16,112);minute_hand=make_hand(&clock_minute,12,170);second_hand=make_hand(&clock_second,24,176);
         lv_obj_add_event_cb(screen,face_event,LV_EVENT_DOUBLE_CLICKED,nullptr);
         lv_timer_create(update_clock,16,nullptr); update_clock(nullptr);
         bsp_display_unlock();
@@ -261,5 +261,5 @@ extern "C" void app_main() {
     xTaskCreate(console_task,"clock_console",6144,nullptr,3,nullptr);
     char ssid[33]={0},password[64]={0};size_t sl=sizeof(ssid),pl=sizeof(password);
     if(nvs_get_str(settings,"ssid",ssid,&sl)==ESP_OK) { nvs_get_str(settings,"password",password,&pl); start_wifi(ssid,password); }
-    printf("CLOCK_READY version=0.1.0\n"); status();
+    printf("CLOCK_READY version=0.1.1\n"); status();
 }

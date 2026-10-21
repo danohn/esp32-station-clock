@@ -13,7 +13,7 @@ DB's source-code license excludes DB-specific design assets. The upstream brandi
 - https://github.com/db-ui/base#deutsche-bahn-brand
 - https://github.com/db-ui/base#license
 
-The railway movement follows Deutsche Bahn's published description of a 58-second sweep and two-second pause. The reconstructed geometry and 180 ms minute advance are not manufacturer-supplied drawings or a measured movement profile.
+The railway movement follows Deutsche Bahn's published description of a 58-second sweep and two-second pause. The face geometry is reconstructed from [Wilfredor's CC0 Munich Hauptbahnhof photograph](https://commons.wikimedia.org/wiki/File:Deutsche_Bahn_clock_at_Munich_Central_Station.jpg); see [measurement notes](docs/clock-reference.md). It is not a manufacturer-supplied drawing. The 180 ms minute advance remains an approximation rather than a measured movement profile.
 
 Reference: https://www.deutschebahn.com/resource/blob/6859022/5561c3dfe03f6a9f351aacf65f245d9c/2020-10-Themendienst-Uhrzeit-und-Zeitumstellung-data.pdf
 
