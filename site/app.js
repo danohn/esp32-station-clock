@@ -1,5 +1,6 @@
 import { ClockSerial, validateWifi } from './clock-serial.js';
 import { initPreview } from './clock-preview.js';
+import { track } from './analytics.js';
 initPreview();
 let themeSupported = false;
 let themeDirty = false, themeEditRevision = 0;
@@ -38,6 +39,14 @@ if (supported) {
   status('Use desktop Chrome or Edge to connect the clock over USB.');
 }
 $('board-confirm').addEventListener('change', (event) => { $('install-button').disabled = !event.target.checked; });
+$('install-button').addEventListener('click', () => track('Install Clicked'));
+$('firmware-download').addEventListener('click', () => track('Firmware Download Clicked'));
+document.addEventListener('click', (event) => {
+  const link = event.target.closest?.('a[href]');
+  if (!link) return;
+  const url = new URL(link.href);
+  if (url.origin === 'https://github.com' && /^\/danohn\/esp32-station-clock(?:\/|$)/.test(url.pathname)) track('GitHub Clicked');
+});
 $('installer').addEventListener('state-changed', (event) => {
   if (event.detail?.state === 'finished') status('Installation finished. Close the installer dialog, then connect the clock here.');
 });
@@ -48,6 +57,7 @@ $('connect-button').addEventListener('click', async () => {
     await clock.connect(); await clock.syncTime(); controls(true);
     $('install-button').disabled = true; $('board-confirm').disabled = true;
     status('Clock connected. Time set from this computer.');
+    track('Clock Connected');
   });
 });
 $('disconnect-button').addEventListener('click', async () => {

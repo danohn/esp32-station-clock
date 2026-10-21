@@ -1,4 +1,62 @@
 import { test, expect } from '@playwright/test';
+
+test('local previews never load the production analytics tracker', async ({ page }) => {
+  const analytics = [];
+  page.on('request', request => { if (new URL(request.url()).hostname === 'analytics.danohn.com') analytics.push(request.url()); });
+  await mockSerial(page); await page.goto('/');
+  await expect(page.locator('#installer-loading')).toBeHidden();
+  await page.getByRole('button', { name: 'Connect clock', exact: true }).click();
+  await expect(page.locator('#connection-status')).toContainText('Clock connected.');
+  expect(analytics).toEqual([]);
+});
+
+test('production analytics sends named actions without setup values or serial details', async ({ page }) => {
+  // Serve the local build under its production hostname, intercepting every tracker request.
+  await page.route('https://stationclock.net/**', async route => {
+    const url = new URL(route.request().url());
+    const response = await page.request.get('http://localhost:4173' + url.pathname + url.search);
+    await route.fulfill({ response });
+  });
+  await page.route('https://analytics.danohn.com/**', async route => {
+    expect(new URL(route.request().url()).pathname).toBe('/js/pa-q75pBtpEil5K2tX8Zb3lH.js');
+    await route.fulfill({ contentType: 'text/javascript', body: `
+      window.recordedAnalytics = [];
+      const queued = window.plausible?.q || [];
+      window.plausible = (...args) => window.recordedAnalytics.push(args);
+      queued.forEach(args => window.plausible(...args));
+    ` });
+  });
+  await mockSerial(page); await page.goto('https://stationclock.net/');
+  await expect(page.locator('#installer-loading')).toBeHidden();
+  await expect(page.locator('script[data-domain="stationclock.net"]')).toHaveAttribute('src', 'https://analytics.danohn.com/js/pa-q75pBtpEil5K2tX8Zb3lH.js');
+  await page.getByRole('button', { name: 'Connect clock', exact: true }).click();
+  await expect(page.locator('#connection-status')).toContainText('Clock connected.');
+  await page.locator('#ssid').fill('Private test network');
+  await page.locator('#password').fill('private-test-password');
+  await page.getByRole('button', { name: 'Save & connect Wi-Fi' }).click();
+  await expect(page.locator('#wifi-status')).toContainText('Connected to Wi-Fi');
+  await page.evaluate(async () => {
+    const { track } = await import('/analytics.js');
+    track('Firmware Download Clicked');
+    track('not-an-approved-event');
+  });
+  expect(await page.evaluate(() => window.recordedAnalytics)).toEqual([
+    ['Clock Connected'], ['Firmware Download Clicked'],
+  ]);
+});
+
+test('blocked analytics does not prevent production USB setup', async ({ page }) => {
+  await page.route('https://stationclock.net/**', async route => {
+    const url = new URL(route.request().url());
+    const response = await page.request.get('http://localhost:4173' + url.pathname + url.search);
+    await route.fulfill({ response });
+  });
+  await page.route('https://analytics.danohn.com/**', route => route.abort('blockedbyclient'));
+  await mockSerial(page); await page.goto('https://stationclock.net/');
+  await expect(page.locator('#installer-loading')).toBeHidden();
+  await page.getByRole('button', { name: 'Connect clock', exact: true }).click();
+  await expect(page.locator('#connection-status')).toHaveText('Clock connected. Time set from this computer.');
+});
 async function mockSerial(page, { fragmentFirstStatus = false, theme = null } = {}) {
   await page.addInitScript(({ fragmentFirstStatus, theme }) => {
     const encoder = new TextEncoder(); let input; let open = false; let statusRequests = 0;

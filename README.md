@@ -101,7 +101,19 @@ run `uv run tools/generate_social_card.py`, inspect
 Swiss artwork attribution. When changing its filename, update both social
 image URLs and the JSON-LD image in `site/index.html`. Forks should update the
 canonical URL, metadata, sitemap and repository links for their own deployment.
-No analytics service is included by default.
+Production pages on `stationclock.net` and `www.stationclock.net` use self-hosted
+Plausible at `analytics.danohn.com`. Local previews and forks do not load the
+analytics script. `site/analytics.js` sends only an allowlist of named actions,
+with no event properties or form/serial data. A blocked analytics script does
+not affect installation or USB setup. The page includes an analytics notice.
+
+Configure these exact Custom Event goals in Plausible for `stationclock.net`:
+`Install Clicked`, `Firmware Download Clicked`, `Clock Connected`, and
+`GitHub Clicked`. The first two measure clicks, not completed flashes or
+downloads. `Clock Connected` is sent after USB connection and time sync succeed.
+The tracker also records page views and standard campaign/referrer information.
+No API key is needed in browser code; server-side API credentials must stay out
+of the repository, site output and logs.
 
 ## GitHub Actions and Pages
 
