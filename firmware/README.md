@@ -26,6 +26,14 @@ Firmware 0.2.0 includes both DB and Swiss themes. Swipe the display or tap the
 bottom pill to change themes. Each clock remembers its selection. USB control:
 `uv run tools/clockctl.py --port YOUR_SERIAL_PORT theme swiss` (or `theme db`).
 
+Firmware 0.3.0 adds worldwide IANA timezone selection with automatic
+daylight-saving changes. Search for a location in browser setup, or use
+`uv run tools/clockctl.py timezones` and
+`uv run tools/clockctl.py --port YOUR_SERIAL_PORT timezone Europe/London`.
+The bundled IANA 2026e rules cover 2024–2099; future rule changes require an
+updated firmware image. Application-only updates preserve legacy timezone
+settings. Factory installation still clears all settings.
+
 Original software uses MIT. Swiss artwork is separately attributed under CC
 BY-SA 3.0 to JuergenG / Rainer Zenz's photograph, with reconstructed geometry
 and a traced maker mark. See the accompanying `THIRD_PARTY_NOTICES.md` and

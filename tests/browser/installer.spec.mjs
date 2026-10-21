@@ -61,12 +61,14 @@ test('blocked analytics does not prevent production USB setup', async ({ page })
   await page.getByRole('button', { name: 'Connect clock', exact: true }).click();
   await expect(page.locator('#connection-status')).toHaveText('Clock connected. Time set from this computer.');
 });
-async function mockSerial(page, { fragmentFirstStatus = false, theme = null } = {}) {
-  await page.addInitScript(({ fragmentFirstStatus, theme }) => {
+async function mockSerial(page, { fragmentFirstStatus = false, theme = null, tzdb = null, zone = 'Sydney' } = {}) {
+  await page.addInitScript(({ fragmentFirstStatus, theme, tzdb, zone }) => {
     const encoder = new TextEncoder(); let input; let open = false; let statusRequests = 0;
     window.fakeCommands = []; window.fakeTheme = theme; window.fakeBrightness = 65;
+    window.fakeZone = zone; window.fakeTzdb = tzdb;
     const line = (text) => input.enqueue(encoder.encode(text + '\n'));
-    const statusLine = () => 'CLOCK_STATUS time=2026-10-21T12:00:00.000 zone=Sydney epoch_us=1792544400000000 demo=0' +
+    const statusLine = () => 'CLOCK_STATUS time=2026-10-21T12:00:00.000 zone=' + window.fakeZone + ' epoch_us=1792544400000000 demo=0' +
+      (window.fakeTzdb ? ' tzdb=' + window.fakeTzdb : '') +
       (window.fakeTheme === null ? '' : ' theme=' + window.fakeTheme + ' brightness=' + window.fakeBrightness);
     window.fakePhysicalTheme = (value) => { window.fakeTheme = value; line(statusLine()); };
     const port = {
@@ -82,7 +84,7 @@ async function mockSerial(page, { fragmentFirstStatus = false, theme = null } = 
         else if (command.startsWith('WIFI ')) {
           line('CLOCK_OK wifi saved');
           setTimeout(() => { line('I (7) esp_netif_handlers: sta ip: 192.0.2.10, mask: 255.255.255.0'); line('I (8) station_clock: Network time synchronised'); }, 30);
-        } else if (command.startsWith('TZ ')) line('CLOCK_OK timezone');
+        } else if (command.startsWith('TZ ')) { window.fakeZone = command.slice(3); line('CLOCK_OK timezone'); line(statusLine()); }
         else if (command.startsWith('BRIGHTNESS ')) { window.fakeBrightness = Number(command.slice(11)); line('CLOCK_OK brightness'); }
         else if (command.startsWith('THEME ')) { window.fakeTheme = command.slice(6); line('CLOCK_OK theme'); }
         else if (command === 'DEMO') line('I (9) station_clock: Minute-change demonstration started (12 seconds)');
@@ -92,8 +94,57 @@ async function mockSerial(page, { fragmentFirstStatus = false, theme = null } = 
       getInfo() { return { usbVendorId: 0x303a, usbProductId: 0x1001 }; },
     };
     Object.defineProperty(navigator, 'serial', { configurable: true, value: { requestPort: async () => port } });
-  }, { fragmentFirstStatus, theme });
+  }, { fragmentFirstStatus, theme, tzdb, zone });
 }
+
+test.describe('worldwide timezone setup', () => {
+  test.use({ timezoneId: 'Asia/Kathmandu' });
+  test('searches cities and countries, preserves edits, and saves IANA IDs', async ({ page }) => {
+    await mockSerial(page, { theme: 'db', tzdb: '2026e', zone: 'Australia/Sydney' }); await page.goto('/');
+    await page.getByRole('button', { name: 'Connect clock', exact: true }).click();
+    await expect(page.locator('#timezone-search')).toBeEnabled();
+    await expect(page.locator('#timezone')).toHaveValue('Australia/Sydney');
+    await page.locator('#timezone-search').fill('New Zealand');
+    await expect(page.locator('#timezone option')).toContainText(['Auckland', 'Chatham', 'Sydney']);
+    await page.locator('#timezone-search').fill('New York');
+    await page.locator('#timezone-search').press('Enter');
+    await expect(page.locator('#timezone')).toBeFocused();
+    expect((await page.evaluate(() => window.fakeCommands)).some(command => command.startsWith('WIFI '))).toBe(false);
+    await page.locator('#timezone').selectOption('America/New_York');
+    await page.evaluate(() => window.fakePhysicalTheme('swiss'));
+    await expect(page.locator('#timezone')).toHaveValue('America/New_York');
+    await page.getByRole('button', { name: 'Save display settings' }).click();
+    await expect(page.locator('#settings-status')).toContainText('saved.');
+    expect(await page.evaluate(() => window.fakeCommands)).toContain('TZ America/New_York');
+    await page.locator('#timezone-search').fill('no-such-city');
+    await expect(page.locator('#timezone')).toHaveValue('America/New_York');
+    await expect(page.locator('#timezone-support')).toContainText('0 other matching locations');
+    await page.getByRole('button', { name: 'Use this computer' }).click();
+    await expect(page.locator('#timezone')).toHaveValue('Asia/Kathmandu');
+    await expect(page.locator('#timezone-support')).toContainText('Timezone change pending');
+    await page.getByRole('button', { name: 'Save display settings' }).click();
+    await expect(page.locator('#save-display')).toBeEnabled();
+    expect(await page.evaluate(() => window.fakeCommands)).toContain('TZ Asia/Kathmandu');
+    expect(await page.evaluate(() => localStorage.length)).toBe(0);
+    await page.locator('#setup').screenshot({ path: '.local/site-timezones-desktop.png' });
+    await page.setViewportSize({ width: 375, height: 812 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.locator('#setup').screenshot({ path: '.local/site-timezones-mobile.png' });
+  });
+  test('reconnecting older firmware limits choices and explains the update', async ({ page }) => {
+    await mockSerial(page, { tzdb: '2026e', zone: 'Europe/London' }); await page.goto('/');
+    await page.getByRole('button', { name: 'Connect clock', exact: true }).click();
+    await expect(page.locator('#timezone')).toHaveValue('Europe/London');
+    await page.getByRole('button', { name: 'Disconnect', exact: true }).click();
+    await page.evaluate(() => { window.fakeTzdb = null; window.fakeZone = 'Berlin'; });
+    await page.getByRole('button', { name: 'Connect clock', exact: true }).click();
+    await expect(page.locator('#timezone option')).toHaveCount(3);
+    await expect(page.locator('#timezone')).toHaveValue('Berlin');
+    await expect(page.locator('#timezone-search')).toBeDisabled();
+    await expect(page.locator('#timezone-computer')).toBeDisabled();
+    await expect(page.locator('#timezone-support')).toContainText('Install firmware 0.3.0');
+  });
+});
 test('connection recovers when a partial boot log hides the first status reply', async ({ page }) => {
   await mockSerial(page, { fragmentFirstStatus: true }); await page.goto('/');
   await page.getByRole('button', { name: 'Connect clock', exact: true }).click();

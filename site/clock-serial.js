@@ -1,4 +1,5 @@
 /** Station Clock's existing text protocol over Web Serial. No credentials are logged or stored. */
+import { timezoneCommand } from './timezone-picker.js';
 export const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export function validateWifi(ssid, password) {
   const bytes = (text) => new TextEncoder().encode(text).length;
@@ -11,7 +12,7 @@ export function parseStatus(line) {
 }
 export class ClockSerial extends EventTarget {
   constructor(serial) {
-    super(); this.serial = serial; this.port = null; this.waiters = new Set(); this.running = false; this.busy = false;
+    super(); this.serial = serial; this.port = null; this.waiters = new Set(); this.running = false; this.busy = false; this.timezoneDatabase = null;
   }
   emit(type, detail) { this.dispatchEvent(new CustomEvent(type, { detail })); }
   expect(predicate, timeout = 6000) {
@@ -30,7 +31,11 @@ export class ClockSerial extends EventTarget {
     return { promise, cancel: () => { clearTimeout(entry.timer); this.waiters.delete(entry); } };
   }
   consume(line) {
-    const status = parseStatus(line); if (status) this.emit('status', status);
+    const status = parseStatus(line);
+    if (status) {
+      if ('epoch_us' in status) this.timezoneDatabase = status.tzdb || null;
+      this.emit('status', status);
+    }
     const ip = line.match(/sta ip:\s*([0-9.]+)/); if (ip) this.emit('network', { ip: ip[1] });
     if (line.includes('Network time synchronised')) this.emit('synchronised', true);
     for (const waiter of [...this.waiters]) {
@@ -69,6 +74,7 @@ export class ClockSerial extends EventTarget {
   }
   async connect() {
     if (this.port) throw new Error('Disconnect the existing session first.');
+    this.timezoneDatabase = null;
     const port = await this.serial.requestPort();
     try { await port.open({ baudRate: 115200, bufferSize: 8192 }); }
     catch { throw new Error('Could not open the clock. Close the installer, terminal, or other serial tool, then try again.'); }
@@ -99,8 +105,7 @@ export class ClockSerial extends EventTarget {
   }
   async syncTime() { await this.command('TIME ' + String(Date.now() * 1000), (line) => line === 'CLOCK_OK time'); }
   async setTimezone(zone) {
-    if (!['Sydney', 'Berlin', 'UTC'].includes(zone)) throw new Error('Select a supported timezone.');
-    await this.command('TZ ' + zone);
+    await this.command('TZ ' + timezoneCommand(zone, Boolean(this.timezoneDatabase)), (line) => line === 'CLOCK_OK timezone');
   }
   async setBrightness(value) {
     if (!Number.isInteger(value) || value < 5 || value > 100) throw new Error('Brightness must be between 5 and 100.');

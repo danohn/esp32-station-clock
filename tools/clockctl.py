@@ -3,9 +3,17 @@ import argparse
 import getpass
 import glob
 import json
+from pathlib import Path
 import sys
 import time
 import serial
+
+CATALOG = json.loads((Path(__file__).resolve().parents[1] / 'assets/timezones.json').read_text())
+
+def timezone_id(value):
+    if value not in CATALOG['aliases']:
+        raise argparse.ArgumentTypeError('Unknown timezone. Use timezones to list locations, e.g. Europe/London or Asia/Kolkata.')
+    return value
 
 
 def main():
@@ -18,10 +26,19 @@ def main():
     sub.add_parser('live', help='Return to live time immediately')
     sub.add_parser('wifi', help='Save Wi-Fi credentials; password is entered privately')
     sub.add_parser('forget-wifi', help='Remove saved Wi-Fi credentials')
-    tz = sub.add_parser('timezone'); tz.add_argument('zone', choices=['Sydney', 'Berlin', 'UTC'])
+    tz = sub.add_parser('timezone', help='Save an IANA timezone, e.g. Europe/London; Sydney/Berlin/UTC also work')
+    tz.add_argument('zone', type=timezone_id, metavar='LOCATION')
+    tzlist = sub.add_parser('timezones', help='List supported locations without connecting a clock')
+    tzlist.add_argument('search', nargs='?', default='', help='Filter by city, country, region or IANA ID')
     br = sub.add_parser('brightness'); br.add_argument('percent', type=int, choices=range(5, 101), metavar='5..100')
     theme = sub.add_parser('theme'); theme.add_argument('name', choices=['db', 'swiss'])
     args = p.parse_args()
+    if args.action == 'timezones':
+        query = args.search.casefold().replace('_', ' ')
+        for zone in CATALOG['locations']:
+            if query in (zone['id'].replace('_', ' ') + ' ' + zone['label']).casefold():
+                print(f"{zone['id']:36} {zone['label']}")
+        return 0
     port = args.port
     if not port:
         ports = sorted(glob.glob('/dev/cu.usbmodem*') + glob.glob('/dev/ttyACM*'))

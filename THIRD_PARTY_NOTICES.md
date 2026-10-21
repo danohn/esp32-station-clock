@@ -49,6 +49,13 @@ The 180 ms minute-hand advance remains an approximation.
 
 ## Firmware dependencies
 
+The timezone catalogue and UTC-offset transitions are generated from the
+[IANA Time Zone Database](https://www.iana.org/time-zones), release 2026e,
+distributed through the pinned Python `tzdata` 2026.5 package. The IANA data
+used here is in the public domain. Generation uses Python's standard-library
+`zoneinfo`; no Python or tzdata package code is embedded in the firmware.
+See [timezone maintenance](docs/timezones.md).
+
 Dependencies are installed separately and recorded in `dependencies.lock`. Preserve their accompanying notices when redistributing them or derivative binaries.
 
 - ESP-IDF: https://github.com/espressif/esp-idf

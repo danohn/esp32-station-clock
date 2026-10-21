@@ -8,7 +8,7 @@ The rendering model is independent of the display. `railway::pose` in `main/move
 - The hour hand is coupled to that displayed minute position.
 - Each update derives angles from the current time, so skipped render frames do not accumulate clock drift.
 
-Wi-Fi uses SNTP with `pool.ntp.org`, smooth adjustment and ESP-IDF's default periodic update interval. Internally, time is UTC. The board stores UTC in its PCF85063 RTC and restores it at boot, then synchronises when networking is available. Sydney, Berlin and UTC are selectable; Sydney and Berlin include their daylight-saving rules. The 58/2 motion changes the display phase, not the underlying length of a minute.
+Wi-Fi uses SNTP with `pool.ntp.org`, smooth adjustment and ESP-IDF's default periodic update interval. Internally, time is UTC. The board stores UTC in its PCF85063 RTC and restores it at boot, then synchronises when networking is available. Firmware 0.3.0 applies an embedded IANA timezone catalogue to UTC when rendering or reporting local time, including daylight-saving and fractional offsets. The C library stays in UTC so changing display timezone cannot affect RTC conversion. See [timezone data](timezones.md). The 58/2 motion changes the display phase, not the underlying length of a minute.
 
 The browser preview follows the same movement formula and generated theme metadata using the visitor's local browser time. It is a visual preview, not a live reading from the board. The connected-device status line reports the board's time separately.
 

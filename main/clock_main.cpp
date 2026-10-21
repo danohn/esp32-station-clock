@@ -25,6 +25,7 @@
 #include "board_display.hpp"
 #include "theme_view.hpp"
 #include "generated/theme_catalog.hpp"
+#include "timezones.hpp"
 
 
 static const char *TAG="station_clock";
@@ -56,8 +57,6 @@ static std::atomic<int> timezone_choice{0};
 static bool sntp_started=false;
 static bool wifi_started=false;
 static nvs_handle_t settings;
-static const char *zones[]={"AEST-10AEDT,M10.1.0,M4.1.0/3", "CET-1CEST,M3.5.0,M10.5.0/3", "UTC0"};
-static const char *zone_names[]={"Sydney", "Berlin", "UTC"};
 static uint8_t bcd(int x) { return (x/10)*16+x%10; }
 static int decimal(uint8_t x) { return (x>>4)*10+(x&15); }
 
@@ -70,9 +69,7 @@ static bool rtc_read(time_t &epoch) {
     t.tm_mday=decimal(v[3]&0x3f); t.tm_mon=decimal(v[5]&0x1f)-1; t.tm_year=100+decimal(v[6]);
     if(t.tm_year<124 || t.tm_mon<0 || t.tm_mon>11 || t.tm_mday<1 || t.tm_mday>31 || t.tm_hour>23 || t.tm_min>59 || t.tm_sec>59) return false;
     // RTC is always UTC; ESP-IDF/newlib timegm is not available on every release.
-    const char *saved=getenv("TZ"); std::string restore=saved?saved:"UTC0";
-    setenv("TZ","UTC0",1); tzset(); epoch=mktime(&t);
-    setenv("TZ",restore.c_str(),1); tzset();
+    epoch=mktime(&t); // The C library stays in UTC, including during timezone changes.
     return epoch>1704067200;
 }
 static void rtc_write() {
@@ -81,12 +78,21 @@ static void rtc_write() {
     uint8_t v[]={4,bcd(t.tm_sec),bcd(t.tm_min),bcd(t.tm_hour),bcd(t.tm_mday),bcd(t.tm_wday),bcd(t.tm_mon+1),bcd((t.tm_year+1900)%100)};
     if(i2c_master_transmit(rtc,v,sizeof(v),100)!=ESP_OK) ESP_LOGW(TAG,"RTC update failed");
 }
-static void apply_zone(int choice, bool save=true) {
-    if(choice<0 || choice>2) return;
+static esp_err_t apply_zone(int choice, bool save=true) {
+    if(choice<0 || std::size_t(choice)>=clock_zone::count) return ESP_ERR_INVALID_ARG;
+    const char *id=clock_zone::data::zones[choice].id;
+    if(save) {
+        esp_err_t err=nvs_set_str(settings,"timezone",id);
+        if(err==ESP_OK) err=nvs_commit(settings);
+        if(err!=ESP_OK) return err;
+    }
     timezone_choice.store(choice);
-    setenv("TZ",zones[choice],1); tzset();
-    if(save) { nvs_set_i32(settings,"zone",choice); nvs_commit(settings); }
-    ESP_LOGI(TAG,"Timezone: %s",zone_names[choice]);
+    ESP_LOGI(TAG,"Timezone: %s",id);
+    return ESP_OK;
+}
+static void clock_localtime(time_t epoch, tm &local, int zone) {
+    const time_t shifted=epoch+clock_zone::offset_at(zone,epoch);
+    gmtime_r(&shifted,&local);
 }
 static void time_received(struct timeval *) {
     rtc_write();
@@ -128,7 +134,7 @@ static void start_wifi(const char *ssid,const char *password) {
 static void replay() { demo_start.store(esp_timer_get_time()); ESP_LOGI(TAG,"Minute-change demonstration started (12 seconds)"); }
 static void update_clock(lv_timer_t *) {
     timeval tv{}; gettimeofday(&tv,nullptr);
-    tm local{}; localtime_r(&tv.tv_sec,&local);
+    tm local{}; clock_localtime(tv.tv_sec,local,timezone_choice.load());
     double seconds=local.tm_sec+tv.tv_usec/1000000.0;
     int64_t start=demo_start.load();
     if(start) {
@@ -157,11 +163,11 @@ static void update_clock(lv_timer_t *) {
     }
 }
 static void status() {
-    timeval tv{}; gettimeofday(&tv,nullptr); tm local{};localtime_r(&tv.tv_sec,&local);
-    printf("CLOCK_STATUS time=%04d-%02d-%02dT%02d:%02d:%02d.%03ld zone=%s epoch_us=%lld demo=%d theme=%s brightness=%d\n",
+    timeval tv{}; gettimeofday(&tv,nullptr); tm local{};const int zone=timezone_choice.load();clock_localtime(tv.tv_sec,local,zone);
+    printf("CLOCK_STATUS time=%04d-%02d-%02dT%02d:%02d:%02d.%03ld zone=%s epoch_us=%lld demo=%d theme=%s brightness=%d tzdb=%s\n",
         local.tm_year+1900,local.tm_mon+1,local.tm_mday,local.tm_hour,local.tm_min,local.tm_sec,tv.tv_usec/1000,
-        zone_names[timezone_choice.load()],(long long)tv.tv_sec*1000000+tv.tv_usec,demo_start.load()!=0,
-        clock_theme::themes[clock_ui::selected()].id,brightness_choice.load());
+        clock_zone::data::zones[zone].id,(long long)tv.tv_sec*1000000+tv.tv_usec,demo_start.load()!=0,
+        clock_theme::themes[clock_ui::selected()].id,brightness_choice.load(),clock_zone::data::version);
     fflush(stdout);
 }
 static esp_err_t save_theme(bool force=false) {
@@ -200,10 +206,10 @@ static void command(const std::string &line) {
             else { printf("CLOCK_OK theme\n"); status(); }
         }
     } else if(line.rfind("TZ ",0)==0) {
-        const auto zone=line.substr(3); int found=-1;
-        for(int i=0;i<3;i++) if(zone==zone_names[i]) found=i;
-        if(found>=0) { apply_zone(found); printf("CLOCK_OK timezone\n"); }
-        else printf("CLOCK_ERROR timezone must be Sydney, Berlin or UTC\n");
+        const int found=clock_zone::find(line.c_str()+3);
+        if(found<0) printf("CLOCK_ERROR unknown IANA timezone\n");
+        else if(apply_zone(found)!=ESP_OK) printf("CLOCK_ERROR timezone not saved\n");
+        else { printf("CLOCK_OK timezone\n"); status(); }
     } else if(line.rfind("BRIGHTNESS ",0)==0) {
         char *end=nullptr; long value=strtol(line.c_str()+11,&end,10);
         if(end && *end==0 && value>=5 && value<=100) {
@@ -244,8 +250,12 @@ extern "C" void app_main() {
     esp_err_t err=nvs_flash_init();
     if(err==ESP_ERR_NVS_NO_FREE_PAGES||err==ESP_ERR_NVS_NEW_VERSION_FOUND) { ESP_ERROR_CHECK(nvs_flash_erase()); err=nvs_flash_init(); }
     ESP_ERROR_CHECK(err); ESP_ERROR_CHECK(nvs_open("clock",NVS_READWRITE,&settings));
-    int32_t zone=0; nvs_get_i32(settings,"zone",&zone); apply_zone(zone,false);
-    ESP_LOGI(TAG,"Station Clock 0.2.0 - starting display");
+    setenv("TZ","UTC0",1); tzset();
+    int32_t legacy_zone=0; nvs_get_i32(settings,"zone",&legacy_zone);
+    char zone_id[64]={0}; size_t zone_length=sizeof(zone_id);
+    nvs_get_str(settings,"timezone",zone_id,&zone_length);
+    ESP_ERROR_CHECK(apply_zone(clock_zone::restore(zone_id,legacy_zone),false));
+    ESP_LOGI(TAG,"Station Clock 0.3.0 - starting display");
     lv_display_t *display=clock_display_start();
     ESP_ERROR_CHECK(display?ESP_OK:ESP_FAIL);
     int32_t brightness=65;nvs_get_i32(settings,"brightness",&brightness);
@@ -279,5 +289,5 @@ extern "C" void app_main() {
     xTaskCreate(console_task,"clock_console",6144,nullptr,3,nullptr);
     char ssid[33]={0},password[64]={0};size_t sl=sizeof(ssid),pl=sizeof(password);
     if(nvs_get_str(settings,"ssid",ssid,&sl)==ESP_OK) { nvs_get_str(settings,"password",password,&pl); start_wifi(ssid,password); }
-    printf("CLOCK_READY version=0.2.0\n"); status();
+    printf("CLOCK_READY version=0.3.0\n"); status();
 }
