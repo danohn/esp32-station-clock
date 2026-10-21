@@ -1,0 +1,15 @@
+{
+  "name": "esp32-station-clock-site",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build:site": "node tools/build_site.mjs",
+    "preview": "node tools/serve_site.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "playwright test"
+  },
+  "dependencies": { "esp-web-tools": "10.4.0" },
+  "devDependencies": { "@playwright/test": "1.64.1" },
+  "engines": { "node": ">=22" }
+}

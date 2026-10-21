@@ -1,0 +1,25 @@
+# Local SDK, toolchains, reference repos, logs and staged website
+.local/
+# Generated build and installed dependencies
+build/
+managed_components/
+.venv/
+node_modules/
+__pycache__/
+*.py[cod]
+sdkconfig
+sdkconfig.old
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+# Browser test output
+playwright-report/
+test-results/
+# Release packages are produced from source
+releases/
+*.zip
+.DS_Store
+# Firmware is rebuilt for CI, Pages and tagged release artifacts
+/firmware/*.bin
+/firmware/SHA256SUMS.txt

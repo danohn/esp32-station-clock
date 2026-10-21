@@ -1,0 +1,103 @@
+name: Build, test and prepare installer
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish_pages:
+        description: Deploy the checked build to GitHub Pages
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  firmware:
+    runs-on: ubuntu-latest
+    container: espressif/idf:v5.5.2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile ESP32-S3 firmware
+        shell: bash
+        run: |
+          . "$IDF_PATH/export.sh"
+          idf.py build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware-build
+          path: |
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+            build/db_station_clock.bin
+          if-no-files-found: error
+
+  test-and-site:
+    needs: firmware
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: firmware-build
+          path: build
+      - name: Install Python and browser dependencies
+        run: |
+          uv sync --frozen
+          npm ci
+      - name: Verify generated artwork
+        run: |
+          uv run tools/generate_assets.py
+          git diff --exit-code -- assets main/generated clock-preview.png
+      - name: Test native movement calculations
+        run: |
+          mkdir -p .local
+          c++ -std=c++17 -O2 tests/test_movement.cpp -o .local/test-movement
+          .local/test-movement
+      - name: Package firmware and build static installer
+        run: |
+          uv run tools/package_firmware.py
+          npm run build:site
+      - name: Test serial protocol and browser setup
+        run: |
+          npm test
+          npx playwright install --with-deps chromium
+          npm run test:browser
+      - uses: actions/upload-artifact@v4
+        with:
+          name: station-clock-factory-image
+          path: |
+            firmware/db-station-clock-factory.bin
+            firmware/SHA256SUMS.txt
+            firmware/README.md
+          if-no-files-found: error
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: .local/site
+
+  deploy-pages:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_pages
+    needs: test-and-site
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy verified static installer
+        id: deployment
+        uses: actions/deploy-pages@v4

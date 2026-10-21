@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Install a DB-style railway clock on a Waveshare ESP32-S3 Touch AMOLED 1.8 V2, directly from Chrome or Edge. Then set up Wi-Fi over USB.">
+  <meta name="theme-color" content="#102b59">
+  <title>Station Clock — install & set up</title>
+  <link rel="icon" href="./assets/db-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="wordmark" href="#top" aria-label="Station Clock home"><img src="./assets/db-logo.svg" width="40" height="28" alt="DB"><span>Station Clock</span></a>
+    <nav aria-label="Main"><a href="#install">Install</a><a href="#setup">Set up</a><a id="source-link" href="#about">Project</a></nav>
+  </header>
+  <main id="top">
+    <section class="intro" aria-labelledby="intro-title">
+      <div class="intro-copy">
+        <p class="eyebrow">Waveshare · ESP32-S3 · AMOLED 1.8 V2</p>
+        <h1 id="intro-title">A little piece<br>of the platform.</h1>
+        <p class="lead">The railway clock’s familiar sweep, its pause at twelve, and the next minute arriving right on cue.</p>
+        <p>Install it on your display over USB. No SDK or command line required.</p>
+        <a class="button primary" href="#install">Install the clock <span aria-hidden="true">↘</span></a>
+        <a class="quiet-link" href="#setup">Already installed? Set up your clock.</a>
+        <p class="motion-caption" id="clock-phase">58 seconds around. Two seconds to wait.</p>
+      </div>
+      <figure class="clock-figure">
+        <div class="device">
+          <svg id="clock-preview" viewBox="0 0 368 448" role="img" aria-label="Live preview of the station clock’s sweep and pause">
+            <image href="./assets/clock_dial.png" width="368" height="448"/>
+            <g transform="translate(184 224)">
+              <g id="preview-hour"><image href="./assets/clock_hour.png" x="-16" y="-112" width="32" height="136"/></g>
+              <g id="preview-minute"><image href="./assets/clock_minute.png" x="-12" y="-158" width="24" height="182"/></g>
+              <g id="preview-second"><image href="./assets/clock_second.png" x="-18" y="-166" width="36" height="224"/></g>
+            </g>
+          </svg>
+        </div>
+        <figcaption>58 s sweep <span aria-hidden="true">/</span> 2 s pause <span aria-hidden="true">/</span> Wi-Fi time sync</figcaption>
+      </figure>
+    </section>
+    <div class="journey">
+      <section class="step" id="install" aria-labelledby="install-title">
+        <div class="step-marker" aria-hidden="true">1</div>
+        <div class="step-content">
+          <p class="eyebrow">Install firmware <span class="version" data-version>v0.1.0</span></p>
+          <h2 id="install-title">Plug in. Put the clock on board.</h2>
+          <p>Use desktop Chrome or Edge and a USB data cable. Select your ESP32-S3 when the browser asks.</p>
+          <div class="board-note"><strong>For the Waveshare ESP32-S3-Touch-AMOLED-1.8 V2.</strong><br>Other display sizes and the original revision have not been verified.</div>
+          <label class="check"><input id="board-confirm" type="checkbox"> <span>I’m using the 1.8-inch AMOLED V2 board.</span></label>
+          <div id="installer-container">
+            <esp-web-install-button id="installer" manifest="./firmware/manifest.json">
+              <button class="button primary" id="install-button" slot="activate" disabled>Install firmware</button>
+              <p slot="unsupported" class="notice">Open this page in desktop Chrome or Edge to install over USB.</p>
+              <p slot="not-allowed" class="notice">USB installation needs HTTPS, or localhost for a local preview.</p>
+            </esp-web-install-button>
+          </div>
+          <p id="installer-loading" class="small" role="status">Loading the USB installer…</p>
+          <p class="small">Installing replaces the current firmware and clears saved Wi-Fi settings. After installing, close the installer dialog and continue below.</p>
+          <div class="inline-links"><a id="firmware-download" href="./firmware/db-station-clock-factory.bin" download>Download firmware</a><a href="./firmware/SHA256SUMS.txt">SHA-256 checksum</a></div>
+        </div>
+      </section>
+      <section class="step" id="setup" aria-labelledby="setup-title">
+        <div class="step-marker" aria-hidden="true">2</div>
+        <div class="step-content">
+          <p class="eyebrow">Set up over USB</p>
+          <h2 id="setup-title">Give it the time. Let it stay in time.</h2>
+          <p>Connect the installed clock to set its time from this computer. Add Wi-Fi for automatic time updates.</p>
+          <div class="connection-actions"><button class="button secondary" id="connect-button" type="button">Connect clock</button><button class="button subtle" id="disconnect-button" type="button" hidden>Disconnect</button></div>
+          <p class="notice" id="connection-status" role="status" aria-live="polite">No clock connected.</p>
+          <div id="clock-details" class="clock-details" hidden><span id="clock-time">—</span><span id="clock-zone">—</span><span id="network-state">Wi-Fi status not yet confirmed</span></div>
+          <form id="wifi-form">
+            <fieldset id="setup-fields" disabled>
+              <div class="field-row"><label>Network name (SSID)<input name="ssid" id="ssid" autocomplete="off" autocapitalize="none" spellcheck="false" required></label><label>Wi-Fi password<input name="password" id="password" type="password" autocomplete="off" aria-describedby="password-note"></label></div>
+              <p id="password-note" class="small">Use a 2.4 GHz network. Credentials go directly to the clock over USB and are not saved by this page.</p>
+              <button class="button primary" id="wifi-button" type="submit">Save & connect Wi-Fi</button>
+              <p id="wifi-status" class="small" role="status" aria-live="polite"></p>
+              <div class="settings-divider"></div>
+              <div class="field-row"><label>Clock timezone<select id="timezone"><option value="Sydney">Sydney</option><option value="Berlin">Berlin</option><option value="UTC">UTC</option></select></label><label>Display brightness <span id="brightness-value">65%</span><input type="range" id="brightness" min="5" max="100" value="65"></label></div>
+              <div class="settings-actions"><button class="button secondary" id="save-display" type="button">Save display settings</button><button class="button subtle" id="sync-time" type="button">Sync time now</button><button class="button subtle" id="replay" type="button">Replay minute change</button></div>
+              <p id="settings-status" class="small" role="status" aria-live="polite"></p>
+            </fieldset>
+          </form>
+        </div>
+      </section>
+    </div>
+    <section class="about" id="about" aria-labelledby="about-title">
+      <h2 id="about-title">A clock with a small pause.</h2>
+      <p>The seconds hand completes its lap in 58 seconds, waits at twelve, then sets off as the minute hand advances. The firmware gets UTC time from <code>pool.ntp.org</code> and applies your selected timezone.</p>
+      <details><summary>Connection or installation trouble?</summary><ul><li>Close serial monitors and the installer dialog before opening clock setup. Only one connection can use the USB port at a time.</li><li>If the board is missing from the picker, try a USB data cable. To enter download mode, hold BOOT while resetting the board, then release BOOT.</li><li>If Wi-Fi does not connect, check the network name, password, and 2.4 GHz availability.</li><li>Without Wi-Fi, the clock continues locally. Its RTC keeps time across resets while it remains powered.</li></ul></details>
+      <details><summary>Hardware, accuracy & development</summary><p>Verified on V2 hardware with CO5300 display and CST820-family touch. The 180 ms minute-hand advance is an adjustable approximation. Frame rate varies with hand angle; this firmware does not sustain 60 fps. Source builds use ESP-IDF v5.5.2.</p></details>
+    </section>
+  </main>
+  <footer><span>Station Clock · <span data-version>v0.1.0</span></span><p>An independent project. Deutsche Bahn owns the DB mark; this project is not affiliated with or endorsed by DB.</p><span>Flashing powered by <a href="https://esphome.github.io/esp-web-tools/">ESP Web Tools</a></span></footer>
+</body>
+</html>
