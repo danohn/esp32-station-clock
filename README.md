@@ -84,6 +84,8 @@ Open **http://localhost:4173** in desktop Chrome or Edge. Web Serial requires HT
 
 The included workflow compiles the ESP32-S3 firmware, checks generated artwork, runs native movement tests and simulated browser tests, and uploads firmware/site artifacts. It does not publish automatically on pushes.
 
+Firmware outputs are cached by ESP-IDF version and a hash of the firmware source, artwork, dependency lock and build configuration. Website, documentation and test changes reuse an exact cache match and skip both the SDK container and firmware compilation. Firmware input changes, SDK updates or an expired cache trigger a fresh build. The installer is still packaged and tested on every run.
+
 To publish an updated installer from this repository:
 
 1. Push `main` to GitHub.

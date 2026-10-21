@@ -18,14 +18,26 @@ permissions:
 jobs:
   firmware:
     runs-on: ubuntu-latest
-    container: espressif/idf:v5.5.2
+    env:
+      IDF_VERSION: v5.5.2
     steps:
       - uses: actions/checkout@v4
+      - name: Restore firmware built from the same inputs
+        id: firmware-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+            build/db_station_clock.bin
+          key: firmware-${{ runner.os }}-${{ env.IDF_VERSION }}-${{ hashFiles('CMakeLists.txt', 'main/**', 'assets/**', 'dependencies.lock', 'sdkconfig.defaults', 'partitions.csv') }}
       - name: Compile ESP32-S3 firmware
-        shell: bash
+        if: steps.firmware-cache.outputs.cache-hit != 'true'
         run: |
-          . "$IDF_PATH/export.sh"
-          idf.py build
+          docker run --rm \
+            -e IDF_GIT_SAFE_DIR=/project \
+            -v "$GITHUB_WORKSPACE:/project" -w /project \
+            "espressif/idf:$IDF_VERSION" idf.py build
       - uses: actions/upload-artifact@v4
         with:
           name: firmware-build
