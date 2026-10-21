@@ -107,6 +107,9 @@ test.describe('worldwide timezone setup', () => {
     await page.locator('#timezone-search').fill('New Zealand');
     await expect(page.locator('#timezone option')).toContainText(['Auckland', 'Chatham', 'Sydney']);
     await page.locator('#timezone-search').fill('New York');
+    await page.locator('#timezone-search').press('Enter');
+    await expect(page.locator('#timezone')).toBeFocused();
+    expect((await page.evaluate(() => window.fakeCommands)).some(command => command.startsWith('WIFI '))).toBe(false);
     await page.locator('#timezone').selectOption('America/New_York');
     await page.evaluate(() => window.fakePhysicalTheme('swiss'));
     await expect(page.locator('#timezone')).toHaveValue('America/New_York');

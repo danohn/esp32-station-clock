@@ -18,6 +18,11 @@ export class TimezonePicker {
     this.extended = false; this.dirty = false; this.selected = 'Australia/Sydney';
     this.detected = canonicalTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
     search.addEventListener('input', () => this.render());
+    search.addEventListener('keydown', event => {
+      // This control shares the Wi-Fi form; Enter should choose a location,
+      // rather than submit saved network credentials.
+      if (event.key === 'Enter') { event.preventDefault(); select.focus(); }
+    });
     select.addEventListener('change', () => { this.selected = canonicalTimezone(select.value); this.dirty = true; this.render(); });
     computer.addEventListener('click', () => {
       if (!this.detected) return;
