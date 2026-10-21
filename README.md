@@ -88,10 +88,20 @@ Open **http://localhost:4173** in desktop Chrome or Edge. Web Serial requires HT
 
 - `site/` contains tracked HTML, CSS, JavaScript and the serial protocol client.
 - `.local/site/` is the generated static website, including the merged image, checksum, installer manifest, artwork and ESP Web Tools bundle.
-- All site assets use relative URLs so a GitHub Pages project subpath works.
+- Runtime site assets use relative URLs so a GitHub Pages project subpath works. Search and social metadata use the production canonical URL, `https://stationclock.net/`.
 - Preview storage contains only a theme ID; Wi-Fi credentials are never put in browser storage.
 - The page links to the source repository, issue tracker and license on GitHub. The header's **GitHub** link uses `GITHUB_REPOSITORY` when available in the Pages build; local previews link to the original repository.
 - Firmware binaries and staged website output are ignored in Git. Both are produced from the same checked-out source by CI.
+
+Search metadata, Open Graph and X Card tags are served in the HTML, with a
+1200 × 630 share image, `robots.txt`, a sitemap and JSON-LD describing the
+website and source project. To refresh the share image after artwork changes,
+run `uv run tools/generate_social_card.py`, inspect
+`site/social/station-clock-v0.2.png`, then rebuild the site. The image carries
+Swiss artwork attribution. When changing its filename, update both social
+image URLs and the JSON-LD image in `site/index.html`. Forks should update the
+canonical URL, metadata, sitemap and repository links for their own deployment.
+No analytics service is included by default.
 
 ## GitHub Actions and Pages
 

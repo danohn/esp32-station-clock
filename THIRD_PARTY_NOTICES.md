@@ -33,6 +33,12 @@ correction, measurement, reconstructed geometry, a traced maker mark, neutral
 colours and removal of photographic glare and wear. The original software is
 MIT-licensed; the Swiss artwork is excluded from that licence.
 
+The website's composite social share image,
+`site/social/station-clock-v0.2.png`, includes that Swiss artwork and is
+distributed under CC BY-SA 3.0, with the credit visible in the image and
+embedded in its PNG metadata. The composition adds project text and the DB
+preview. Railway trademarks retain their separate rights.
+
 SBB clock-design rights and Mobatime marks remain with their owners. The
 photographic/artwork licence does not grant trademark rights or imply
 endorsement. The official SBB digital-clock code and assets are not included.
