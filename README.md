@@ -21,7 +21,7 @@ Open the **[browser installer](https://stationclock.net/)** in desktop Chrome or
 1. Connect the V2 board with a USB data cable.
 2. Confirm the board model and choose **Install firmware**.
 3. Close the installer dialog, then choose **Connect clock** in the setup section.
-4. Set Wi-Fi, timezone, brightness and theme. The page sets time from your computer when connected; Wi-Fi enables automatic SNTP updates. Theme selection requires firmware 0.2.0 or later; older firmware can still use the other setup controls.
+4. Set Wi-Fi, timezone, brightness and theme. Search timezones by city, country or region, or choose **Use this computer's timezone**. The page sets time from your computer when connected; Wi-Fi enables automatic SNTP updates. The full timezone list requires firmware 0.3.0 or later. Older firmware retains Sydney, Berlin and UTC; theme selection requires firmware 0.2.0 or later.
 
 The browser uses Web Serial. Flashing is provided by a locally bundled ESP Web Tools distribution. Configuration uses the firmware's existing USB text protocol; Improv is not required. Wi-Fi credentials travel directly from the page to the board, are cleared from the form, and are not sent to a server or saved in browser storage. They are stored in the board's NVS settings.
 
@@ -60,6 +60,9 @@ uv run tools/clockctl.py status
 uv run tools/clockctl.py wifi
 uv run tools/clockctl.py timezone Berlin
 uv run tools/clockctl.py timezone Sydney
+uv run tools/clockctl.py timezones London
+uv run tools/clockctl.py timezone Europe/London
+uv run tools/clockctl.py timezone Asia/Kathmandu
 uv run tools/clockctl.py brightness 65
 uv run tools/clockctl.py theme db
 uv run tools/clockctl.py theme swiss
@@ -165,11 +168,12 @@ switches. It does not verify physical touch sensitivity or AMOLED output.
 | --- | --- |
 | `main/clock_main.cpp` | Application, timekeeping, SNTP, RTC, USB commands and LVGL hand layers |
 | `main/movement.hpp` | Hardware-independent hand-angle and pause calculations |
+| `main/timezones.hpp` | IANA timezone lookup, UTC offsets and legacy setting migration |
 | `main/theme_view.cpp` | LVGL faces, cached artwork, crossfade, touch gestures and pill indicator |
 | `main/theme_input.hpp` | Hardware-independent swipe and pill-tap classification |
 | `main/board_display.cpp` | V2 display reset, QSPI port, DMA buffers and touch startup |
 | `assets/` | SVG artwork masters and generated PNGs |
-| `main/generated/` | Generated image data and theme catalog compiled into the firmware |
+| `main/generated/` | Generated image data, theme catalog and timezone transitions compiled into the firmware |
 | `site/` | Browser installer and USB setup interface |
 | `tools/` | Portable build, artwork, packaging, preview and USB utilities |
 | `tests/` | Native movement, serial-protocol and browser interface checks |
@@ -179,7 +183,9 @@ switches. It does not verify physical touch sensitivity or AMOLED output.
 
 ## Timekeeping and limits
 
-Network time comes from `pool.ntp.org` over SNTP. The ESP32 keeps time between updates; the PCF85063 RTC restores UTC after a reset while it remains powered. Sydney and Berlin include daylight-saving rules; UTC is also available.
+Network time comes from `pool.ntp.org` over SNTP. The ESP32 keeps time between updates; the PCF85063 RTC restores UTC after a reset while it remains powered. Firmware 0.3.0 includes IANA 2026e timezone data: 598 recognised IDs and aliases, including half-hour and quarter-hour offsets and automatic daylight-saving transitions. Location selection is saved by IANA ID. Existing Sydney, Berlin and UTC settings carry over during an application update that preserves NVS.
+
+The embedded timezone snapshot covers 2024–2099 using the rules published in IANA 2026e. Future government rule changes require a firmware update; SNTP supplies UTC, not timezone rules. See [timezone data and maintenance](docs/timezones.md).
 
 The 180 ms minute-hand advance is an adjustable approximation, and the reconstructed faces are not manufacturer-supplied drawings. Rendering varies with hand angle and does not sustain 60 fps. The DB-only 0.1.1 firmware was checked on V2 hardware on 21 October 2026. Theme switching in 0.2.0 requires its own physical verification; simulated browser and host tests are not optical or touchscreen hardware measurements. See [hardware verification](docs/hardware.md) and [movement details](docs/movement.md).
 

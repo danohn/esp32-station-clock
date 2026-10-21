@@ -95,7 +95,7 @@
       <section class="step" id="install" aria-labelledby="install-title">
         <div class="step-marker" aria-hidden="true">1</div>
         <div class="step-content">
-          <p class="eyebrow">Install firmware <span class="version" data-version>v0.2.0</span></p>
+          <p class="eyebrow">Install firmware <span class="version" data-version>v0.3.0</span></p>
           <h2 id="install-title">Install the firmware.</h2>
           <p>Use desktop Chrome or Edge and a USB data cable. Select your ESP32-S3 when the browser asks.</p>
           <div class="board-note"><strong>For the Waveshare ESP32-S3-Touch-AMOLED-1.8 V2.</strong><br>Other display sizes and the original revision have not been verified.</div>
@@ -128,7 +128,17 @@
               <button class="button primary" id="wifi-button" type="submit">Save & connect Wi-Fi</button>
               <p id="wifi-status" class="small" role="status" aria-live="polite"></p>
               <div class="settings-divider"></div>
-              <div class="field-row"><label>Clock timezone<select id="timezone"><option value="Sydney">Sydney</option><option value="Berlin">Berlin</option><option value="UTC">UTC</option></select></label><label>Display brightness <span id="brightness-value">65%</span><input type="range" id="brightness" min="5" max="100" value="65"></label></div>
+              <div class="field-row">
+                <div class="timezone-field">
+                  <label for="timezone-search">Find a timezone</label>
+                  <input id="timezone-search" type="search" placeholder="Search city, country or region" autocomplete="off" aria-controls="timezone" aria-describedby="timezone-support">
+                  <label for="timezone">Clock timezone</label>
+                  <select id="timezone" aria-describedby="timezone-support"><option value="Sydney">Sydney</option><option value="Berlin">Berlin</option><option value="UTC">UTC</option></select>
+                  <button class="button subtle" id="timezone-computer" type="button">Use this computer’s timezone</button>
+                  <p id="timezone-support" class="small" role="status">Connect a clock to choose its timezone.</p>
+                </div>
+                <label>Display brightness <span id="brightness-value">65%</span><input type="range" id="brightness" min="5" max="100" value="65"></label>
+              </div>
               <label class="theme-setting">Clock theme<select id="clock-theme" disabled aria-describedby="theme-support"><option value="db">DB</option><option value="swiss">Swiss</option></select></label>
               <p id="theme-support" class="small">Connect a clock to choose its theme. The preview above is separate.</p>
               <div class="settings-actions"><button class="button secondary" id="save-display" type="button">Save display settings</button><button class="button subtle" id="sync-time" type="button">Sync time now</button><button class="button subtle" id="replay" type="button">Replay minute change</button></div>
@@ -147,6 +157,6 @@
       <details><summary>Analytics & privacy</summary><p>We use self-hosted Plausible Analytics at analytics.danohn.com to count page visits, install-button clicks, firmware-download clicks, successful USB connections and GitHub-link clicks. The analytics script uses no cookies. Wi-Fi names, passwords, clock settings and serial logs are not included in analytics events. The clock firmware sends no analytics.</p></details>
     </section>
   </main>
-  <footer><span><a href="https://github.com/danohn/esp32-station-clock">Station Clock on GitHub</a> · <span data-version>v0.2.0</span></span><p>An independent project. Railway marks belong to their respective owners. This project is not affiliated with or endorsed by DB or SBB.</p><span>USB installer: <a href="https://esphome.github.io/esp-web-tools/">ESP Web Tools</a></span></footer>
+  <footer><span><a href="https://github.com/danohn/esp32-station-clock">Station Clock on GitHub</a> · <span data-version>v0.3.0</span></span><p>An independent project. Railway marks belong to their respective owners. This project is not affiliated with or endorsed by DB or SBB.</p><span>USB installer: <a href="https://esphome.github.io/esp-web-tools/">ESP Web Tools</a></span></footer>
 </body>
 </html>

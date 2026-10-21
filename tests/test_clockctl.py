@@ -65,6 +65,24 @@ class CommandTests(unittest.TestCase):
         result, _ = self.run_command(["theme", "swiss"], [b"CLOCK_STATUS time=startup theme=db\n"])
         self.assertEqual(result, 1)
 
+    def test_iana_timezone_and_legacy_alias(self):
+        for zone in ('Asia/Kathmandu', 'Europe/London', 'Sydney'):
+            result, commands = self.run_command(['timezone', zone], [b'CLOCK_OK timezone\n'])
+            self.assertEqual(result, 0)
+            self.assertEqual(commands, [f'TZ {zone}\n'.encode()])
+
+    def test_invalid_timezone_never_opens_a_port(self):
+        with self.assertRaises(SystemExit) as raised:
+            self.run_command(['timezone', 'Europe/London\nDEMO'], [])
+        self.assertEqual(raised.exception.code, 2)
+
+    def test_timezone_list_does_not_need_hardware(self):
+        with patch.object(sys, 'argv', ['clockctl', 'timezones', 'Nepal']), \
+             patch.object(clockctl.serial, 'Serial') as serial_open, redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(clockctl.main(), 0)
+        serial_open.assert_not_called()
+        self.assertIn('Asia/Kathmandu', output.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

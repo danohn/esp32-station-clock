@@ -1,6 +1,29 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ClockSerial, parseStatus, validateWifi } from '../site/clock-serial.js';
+import { timezoneCommand } from '../site/timezone-picker.js';
+
+test('timezone commands validate IANA IDs and preserve older firmware compatibility', () => {
+  assert.equal(timezoneCommand('Sydney', true), 'Australia/Sydney');
+  assert.equal(timezoneCommand('Asia/Calcutta', true), 'Asia/Kolkata');
+  assert.equal(timezoneCommand('Australia/Sydney', false), 'Sydney');
+  assert.equal(timezoneCommand('Berlin', false), 'Berlin');
+  assert.throws(() => timezoneCommand('Europe/London', false), /firmware 0.3.0/);
+  for (const invalid of ['__proto__', 'constructor', 'Europe/London\nDEMO', '', null, 'Atlantis/City'])
+    assert.throws(() => timezoneCommand(invalid, true), /supported timezone/);
+});
+
+test('timezone capability comes from full status and is not lost to a partial boot reply', async () => {
+  const link = new ClockSerial({}); link.running = true; const commands = [];
+  link.consume('CLOCK_STATUS zone=Australia/Sydney epoch_us=1792544400000000 tzdb=2026e');
+  link.consume('CLOCK_STATUS zone=Sydney time=startup');
+  link.writer = { write: async bytes => { commands.push(new TextDecoder().decode(bytes).trim()); link.consume('CLOCK_OK timezone'); } };
+  await link.setTimezone('Asia/Kathmandu');
+  link.consume('CLOCK_STATUS zone=Sydney epoch_us=1792544400000000');
+  await assert.rejects(link.setTimezone('Asia/Kathmandu'), /firmware 0.3.0/);
+  await link.setTimezone('Australia/Sydney');
+  assert.deepEqual(commands, ['TZ Asia/Kathmandu', 'TZ Sydney']);
+});
 
 test('Wi-Fi input counts UTF-8 bytes and supports open networks', () => {
   assert.doesNotThrow(() => validateWifi('platform', ''));

@@ -359,6 +359,9 @@ input[type="range"] {
   border-top: 1px solid var(--grey);
   margin-top: 30px;
 }
+.timezone-field { min-width: 0; }
+.timezone-field input, .timezone-field select { margin: 7px 0 14px; }
+.timezone-field .button { text-align: left; }
 .settings-actions {
   display: flex;
   gap: 10px;

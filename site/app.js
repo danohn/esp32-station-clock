@@ -1,6 +1,7 @@
 import { ClockSerial, validateWifi } from './clock-serial.js';
 import { initPreview } from './clock-preview.js';
 import { track } from './analytics.js';
+import { TimezonePicker } from './timezone-picker.js';
 initPreview();
 let themeSupported = false;
 let themeDirty = false, themeEditRevision = 0;
@@ -9,13 +10,14 @@ function resetThemeSupport() {
   $('theme-support').textContent = 'Connect a clock to choose its theme. The preview above is separate.';
 }
 const $ = (id) => document.getElementById(id);
+const timezonePicker = new TimezonePicker({ select: $('timezone'), search: $('timezone-search'), computer: $('timezone-computer'), hint: $('timezone-support') });
 const supported = window.isSecureContext && typeof navigator.serial?.requestPort === 'function';
 const clock = new ClockSerial(navigator.serial);
 const status = (message, error = false) => { $('connection-status').textContent = message; $('connection-status').classList.toggle('error', error); };
 function controls(connected) {
   $('setup-fields').disabled = !connected; $('connect-button').hidden = connected; $('disconnect-button').hidden = !connected;
   $('clock-details').hidden = !connected;
-  if (!connected) resetThemeSupport();
+  if (!connected) { resetThemeSupport(); timezonePicker.reset(); }
 }
 function userError(error) {
   return error?.name === 'NotFoundError' ? 'No USB device selected. Connect the board and try again.' : (error?.message || 'The operation could not be completed. Reconnect the clock and try again.');
@@ -54,6 +56,7 @@ $('connect-button').addEventListener('click', async () => {
   await operation($('connect-button'), $('connection-status'), async () => {
     status('Select the clock’s USB serial port…');
     resetThemeSupport();
+    timezonePicker.reset();
     await clock.connect(); await clock.syncTime(); controls(true);
     $('install-button').disabled = true; $('board-confirm').disabled = true;
     status('Clock connected. Time set from this computer.');
@@ -68,7 +71,7 @@ clock.addEventListener('status', (event) => {
   const info = event.detail;
   $('clock-time').textContent = (info.time || '').replace('T', ' ');
   $('clock-zone').textContent = info.zone || '';
-  if (['Sydney', 'Berlin', 'UTC'].includes(info.zone)) $('timezone').value = info.zone;
+  timezonePicker.report(info);
   // A boot status may omit capabilities; only a full status determines support.
   if ('epoch_us' in info) {
     themeSupported = ['db', 'swiss'].includes(info.theme);
@@ -114,7 +117,10 @@ $('brightness').addEventListener('input', (event) => { $('brightness-value').tex
 $('save-display').addEventListener('click', () => operation($('save-display'), $('settings-status'), async () => {
   const saveTheme = themeSupported && themeDirty; const theme = $('clock-theme').value;
   const editRevision = themeEditRevision;
-  await clock.setTimezone($('timezone').value); await clock.setBrightness(Number($('brightness').value));
+  const timezone = $('timezone').value;
+  const brightness = Number($('brightness').value);
+  await clock.setTimezone(timezone); timezonePicker.saved(timezone);
+  await clock.setBrightness(brightness);
   if (saveTheme) {
     await clock.setTheme(theme);
     // Preserve a newer edit made while the serial commands were in flight.
