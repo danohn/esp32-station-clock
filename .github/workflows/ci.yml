@@ -90,13 +90,15 @@ jobs:
             firmware/db-station-clock-factory.bin
             firmware/SHA256SUMS.txt
             firmware/README.md
+            firmware/THIRD_PARTY_NOTICES.md
+            firmware/SWISS_ARTWORK_NOTICE.md
           if-no-files-found: error
       - uses: actions/upload-pages-artifact@v4
         with:
           path: .local/site
 
   deploy-pages:
-    if: github.event_name == 'workflow_dispatch' && inputs.publish_pages
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish_pages
     needs: test-and-site
     runs-on: ubuntu-latest
     permissions:

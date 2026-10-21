@@ -584,3 +584,31 @@ esp-web-install-button {
     transition: none;
   }
 }
+
+/* Theme controls sit in the display's unused black strip, below the dial. */
+.device { position: relative; touch-action: pan-y; }
+.clock-theme { opacity: 0; }
+.clock-theme.incoming.fading { transition: opacity 150ms ease; }
+.theme-toggle {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  display: flex; justify-content: center; align-items: center;
+  width: 100%; height: 9.82%; padding: 0; border: 0; border-radius: 14px;
+  background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.theme-toggle:focus-visible { outline: 2px solid white; outline-offset: -4px; }
+.theme-toggle:disabled { visibility: hidden; }
+.theme-pill { display: flex; justify-content: space-evenly; align-items: center; width: 13.05%; aspect-ratio: 3; border-radius: 20px; background: #272727; }
+.theme-pill > span { width: 29.17%; height: 25%; border-radius: 6px; background: #666; }
+.theme-toggle[data-theme="db"] .theme-pill > :first-child,
+.theme-toggle[data-theme="swiss"] .theme-pill > :last-child { background: #dedede; }
+.theme-label {
+  position: absolute; top: 2.2%; left: 50%; transform: translateX(-50%);
+  padding: 0 9px; color: #bdbdbd;
+  font-size: 11px; line-height: 1.25; opacity: 0; pointer-events: none; transition: opacity 150ms ease;
+}
+.theme-label.visible { opacity: 1; }
+.clock-figure .theme-hint { margin: -12px 0 0; font-size: 11px; color: var(--muted, #59616c); text-align: center; }
+.theme-setting { display: block; max-width: 280px; margin-top: 22px; }
+@media (prefers-reduced-motion: reduce) {
+  .clock-theme.incoming.fading, .theme-label { transition: none; }
+}

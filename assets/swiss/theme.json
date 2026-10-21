@@ -1,0 +1,46 @@
+{
+  "id": "swiss",
+  "label": "Swiss",
+  "sweep_seconds": 58.5,
+  "advance_seconds": 0.18,
+  "assets": {
+    "dial": {
+      "svg": "dial.svg",
+      "width": 368,
+      "height": 448
+    },
+    "hour": {
+      "svg": "hour.svg",
+      "width": 32,
+      "height": 160,
+      "pivot": [
+        16,
+        112
+      ]
+    },
+    "minute": {
+      "svg": "minute.svg",
+      "width": 24,
+      "height": 206,
+      "pivot": [
+        12,
+        156
+      ]
+    },
+    "second": {
+      "svg": "second.svg",
+      "width": 44,
+      "height": 188,
+      "pivot": [
+        22,
+        122
+      ]
+    }
+  },
+  "license": {
+    "id": "CC-BY-SA-3.0",
+    "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "attribution": "JuergenG, modified by Rainer Zenz; reconstructed by Station Clock contributors",
+    "source": "https://commons.wikimedia.org/wiki/File:BahnhofsuhrZuerich_RZ.jpg"
+  }
+}

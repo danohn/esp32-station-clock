@@ -20,6 +20,7 @@ def main():
     sub.add_parser('forget-wifi', help='Remove saved Wi-Fi credentials')
     tz = sub.add_parser('timezone'); tz.add_argument('zone', choices=['Sydney', 'Berlin', 'UTC'])
     br = sub.add_parser('brightness'); br.add_argument('percent', type=int, choices=range(5, 101), metavar='5..100')
+    theme = sub.add_parser('theme'); theme.add_argument('name', choices=['db', 'swiss'])
     args = p.parse_args()
     port = args.port
     if not port:
@@ -36,6 +37,7 @@ def main():
         command = 'WIFI ' + json.dumps({'ssid': ssid, 'password': password}, ensure_ascii=True)
     if args.action == 'timezone': command = 'TZ ' + args.zone
     if args.action == 'brightness': command = 'BRIGHTNESS ' + str(args.percent)
+    if args.action == 'theme': command = 'THEME ' + args.name
     try:
         link = serial.Serial(port=None, baudrate=115200, timeout=0.2)
         link.dtr = False; link.rts = False
@@ -61,7 +63,11 @@ def main():
                     if 'CLOCK_ERROR' in line: return 1
                     if 'CLOCK_OK' in line:
                         acknowledged = True
-                    if 'CLOCK_OK' in line or 'CLOCK_STATUS' in line or 'demonstration started' in line:
+                    matches_action = ('CLOCK_STATUS' in line if args.action == 'status' else
+                                      'demonstration started' in line if args.action == 'demo' else
+                                      'CLOCK_OK theme' in line if args.action == 'theme' else
+                                      'CLOCK_OK' in line)
+                    if matches_action:
                         if args.action == 'sync':
                             if acknowledged and 'CLOCK_STATUS' in line:
                                 got_response = True

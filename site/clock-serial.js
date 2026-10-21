@@ -106,6 +106,10 @@ export class ClockSerial extends EventTarget {
     if (!Number.isInteger(value) || value < 5 || value > 100) throw new Error('Brightness must be between 5 and 100.');
     await this.command('BRIGHTNESS ' + value);
   }
+  async setTheme(theme) {
+    if (!['db', 'swiss'].includes(theme)) throw new Error('Select a supported clock theme.');
+    await this.command('THEME ' + theme, (line) => line === 'CLOCK_OK theme');
+  }
   async configureWifi(ssid, password) {
     validateWifi(ssid, password);
     // Subscribe before sending: an open network can connect before the acknowledgement arrives.

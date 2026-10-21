@@ -13,9 +13,23 @@ const digest = createHash('sha256').update(bytes).digest('hex');
 await rm(out, { recursive: true, force: true }); await mkdir(out, { recursive: true });
 await cp(path.join(root, 'site'), out, { recursive: true });
 await mkdir(path.join(out, 'assets'), { recursive: true });
-for (const name of ['db-logo.svg', 'clock_dial.png', 'clock_hour.png', 'clock_minute.png', 'clock_second.png']) {
+const catalog = JSON.parse(await readFile(path.join(root, 'assets/theme-catalog.json'), 'utf8'));
+// Asset paths are project-relative PNGs, never arbitrary filesystem paths.
+const artwork = new Set(['db-logo.svg', 'theme-catalog.json']);
+if (!Array.isArray(catalog) || !catalog.length) throw new Error('Invalid theme catalog');
+for (const theme of catalog) {
+  for (const name of ['dial', 'hour', 'minute', 'second']) {
+    const file = theme.assets?.[name]?.path;
+    if (typeof file !== 'string' || !/^(?:swiss\/)?clock_(?:dial|hour|minute|second)\.png$/.test(file)) throw new Error('Unsafe artwork path in theme catalog');
+    artwork.add(file);
+  }
+}
+for (const name of artwork) {
+  await mkdir(path.dirname(path.join(out, 'assets', name)), { recursive: true });
   await cp(path.join(root, 'assets', name), path.join(out, 'assets', name));
 }
+await cp(path.join(root, 'THIRD_PARTY_NOTICES.md'), path.join(out, 'THIRD_PARTY_NOTICES.md'));
+await cp(path.join(root, 'assets/swiss/NOTICE.md'), path.join(out, 'assets/swiss/NOTICE.md'));
 await cp(path.join(root, 'node_modules/esp-web-tools/dist/web'), path.join(out, 'vendor/esp-web-tools'), { recursive: true });
 await cp(path.join(root, 'node_modules/esp-web-tools/LICENSE'), path.join(out, 'vendor/esp-web-tools/LICENSE.txt'));
 await mkdir(path.join(out, 'firmware'), { recursive: true });

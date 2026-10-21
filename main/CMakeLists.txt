@@ -1,5 +1,5 @@
 file(GLOB CLOCK_ASSETS "generated/*.c")
-idf_component_register(SRCS "clock_main.cpp" "board_display.cpp" ${CLOCK_ASSETS}
+idf_component_register(SRCS "clock_main.cpp" "board_display.cpp" "theme_view.cpp" ${CLOCK_ASSETS}
     INCLUDE_DIRS "." REQUIRES esp32_s3_touch_amoled_1_8 lvgl__lvgl
     esp_wifi esp_event esp_netif nvs_flash lwip json esp_timer driver esp_lcd_touch esp_lvgl_port)
 idf_build_get_property(build_components BUILD_COMPONENTS)

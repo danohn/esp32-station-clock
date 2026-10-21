@@ -40,3 +40,23 @@ test('credentials preserve quotes and spaces without being emitted as UI events'
   assert.ok(!JSON.stringify(events).includes('test-password'));
   assert.equal(link.waiters.size, 0);
 });
+
+test('theme selection validates IDs before writing and requires the theme acknowledgement', async () => {
+  const link = new ClockSerial({}); link.running = true; const commands = [];
+  link.writer = { write: async (bytes) => {
+    commands.push(new TextDecoder().decode(bytes).trimEnd());
+    link.consume('CLOCK_STATUS time=startup zone=Sydney theme=swiss');
+    setTimeout(() => link.consume('CLOCK_OK theme'), 5);
+  } };
+  for (const value of ['', 'Swiss', 'db\nDEMO', 'unknown', null]) await assert.rejects(link.setTheme(value), /supported clock theme/);
+  assert.equal(commands.length, 0);
+  await link.setTheme('swiss'); await link.setTheme('db');
+  assert.deepEqual(commands, ['THEME swiss', 'THEME db']); assert.equal(link.waiters.size, 0);
+});
+
+test('a rejected theme does not leave the serial link busy', async () => {
+  const link = new ClockSerial({}); link.running = true;
+  link.writer = { write: async () => link.consume('CLOCK_ERROR unknown theme') };
+  await assert.rejects(link.setTheme('swiss'), /rejected/);
+  assert.equal(link.busy, false); assert.equal(link.waiters.size, 0);
+});

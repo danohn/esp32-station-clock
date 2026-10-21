@@ -3,6 +3,7 @@ from pathlib import Path
 import hashlib
 import subprocess
 import sys
+import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / 'build'
@@ -25,6 +26,8 @@ def main():
     subprocess.run([sys.executable, '-m', 'esptool', *args], check=True)
     digest = hashlib.sha256(image.read_bytes()).hexdigest()
     (OUT / 'SHA256SUMS.txt').write_text(f'{digest}  {image.name}\n')
+    shutil.copyfile(ROOT / 'THIRD_PARTY_NOTICES.md', OUT / 'THIRD_PARTY_NOTICES.md')
+    shutil.copyfile(ROOT / 'assets/swiss/NOTICE.md', OUT / 'SWISS_ARTWORK_NOTICE.md')
     print(f'Packaged {image.stat().st_size:,} bytes; SHA-256 {digest}')
 
 if __name__ == '__main__':
