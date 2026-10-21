@@ -118,6 +118,7 @@ uv run tools/generate_assets.py --check
 mkdir -p .local
 c++ -std=c++17 -O2 tests/test_movement.cpp -o .local/test-movement
 .local/test-movement
+uv run tests/test_clockctl.py
 npm test
 npm run test:browser
 ```

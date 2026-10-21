@@ -63,7 +63,7 @@ def main():
                     if 'CLOCK_ERROR' in line: return 1
                     if 'CLOCK_OK' in line:
                         acknowledged = True
-                    matches_action = ('CLOCK_STATUS' in line if args.action == 'status' else
+                    matches_action = ('CLOCK_STATUS' in line if args.action in ['status', 'sync'] else
                                       'demonstration started' in line if args.action == 'demo' else
                                       'CLOCK_OK theme' in line if args.action == 'theme' else
                                       'CLOCK_OK' in line)

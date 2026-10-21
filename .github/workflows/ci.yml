@@ -74,6 +74,8 @@ jobs:
           mkdir -p .local
           c++ -std=c++17 -O2 tests/test_movement.cpp -o .local/test-movement
           .local/test-movement
+      - name: Test USB CLI acknowledgements
+        run: uv run tests/test_clockctl.py
       - name: Package firmware and build static installer
         run: |
           uv run tools/package_firmware.py
